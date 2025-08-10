@@ -1,8 +1,9 @@
-name: Rust
+name: Build
 
 on:
 
   pull_request:
+    paths-ignore: [ '*.md', 'assets/**', 'LICENSE' ]
     branches: [ "main" ]
 
 env:
