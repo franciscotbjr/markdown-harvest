@@ -1,0 +1,119 @@
+<svg id="banner-svg" width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Definições -->
+                    <defs>
+                        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0366d6;stop-opacity:0.05"/>
+                            <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:0.1"/>
+                        </linearGradient>
+
+                        <linearGradient id="markdownGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0366d6;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1"/>
+                        </linearGradient>
+
+                        <linearGradient id="harvestGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#d97706;stop-opacity:1"/>
+                        </linearGradient>
+
+                        <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                            <feOffset dx="0" dy="3" result="offsetblur"/>
+                            <feFlood flood-color="#000000" flood-opacity="0.15"/>
+                            <feComposite in2="offsetblur" operator="in"/>
+                            <feMerge>
+                                <feMergeNode/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+
+                        <pattern id="webPattern" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                            <circle cx="5" cy="5" r="1.5" fill="#6b7280" opacity="0.1"/>
+                            <circle cx="15" cy="15" r="1.5" fill="#6b7280" opacity="0.1"/>
+                            <circle cx="25" cy="25" r="1.5" fill="#6b7280" opacity="0.1"/>
+                        </pattern>
+                    </defs>
+
+                    <!-- Background sutil -->
+                    <rect width="1200" height="300" fill="#0d1117" id="bg-rect"/>
+                    <rect width="1200" height="300" fill="url(#bgGradient)"/>
+                    <rect width="1200" height="300" fill="url(#webPattern)"/>
+
+                    <!-- Elementos decorativos de fundo -->
+                    <g opacity="0.05" style="display: none;">
+                        <circle cx="100" cy="150" r="120" fill="#0366d6"/>
+                        <circle cx="1100" cy="150" r="120" fill="#f59e0b"/>
+                    </g>
+
+                    <!-- Web connectivity lines -->
+                    <g opacity="0.1" style="display: none;">
+                        <line x1="0" y1="150" x2="1200" y2="150" stroke="#6b7280" stroke-width="1"/>
+                        <line x1="200" y1="0" x2="200" y2="300" stroke="#6b7280" stroke-width="1"/>
+                        <line x1="1000" y1="0" x2="1000" y2="300" stroke="#6b7280" stroke-width="1"/>
+                    </g>
+
+                    <!-- Wheat decorativo esquerdo -->
+                    <g transform="translate(50, 150)" opacity="0.8" style="display: none;">
+                        <rect x="-3" y="-40" width="6" height="80" fill="#d97706" opacity="0.6"/>
+                        <g fill="url(#harvestGradient)">
+                            <rect x="-12" y="-50" width="8" height="15" rx="4" transform="rotate(-30 0 -42)"/>
+                            <rect x="4" y="-50" width="8" height="15" rx="4" transform="rotate(30 0 -42)"/>
+                            <rect x="-12" y="-35" width="8" height="15" rx="4" transform="rotate(-30 0 -27)"/>
+                            <rect x="4" y="-35" width="8" height="15" rx="4" transform="rotate(30 0 -27)"/>
+                            <rect x="-12" y="-20" width="8" height="15" rx="4" transform="rotate(-30 0 -12)"/>
+                            <rect x="4" y="-20" width="8" height="15" rx="4" transform="rotate(30 0 -12)"/>
+                            <rect x="-12" y="-5" width="8" height="15" rx="4" transform="rotate(-30 0 3)"/>
+                            <rect x="4" y="-5" width="8" height="15" rx="4" transform="rotate(30 0 3)"/>
+                        </g>
+                    </g>
+
+                    <!-- Wheat decorativo direito -->
+                    <g transform="translate(1150, 150)" opacity="0.8" style="display: none;">
+                        <rect x="-3" y="-40" width="6" height="80" fill="#d97706" opacity="0.6"/>
+                        <g fill="url(#harvestGradient)">
+                            <rect x="-12" y="-50" width="8" height="15" rx="4" transform="rotate(-30 0 -42)"/>
+                            <rect x="4" y="-50" width="8" height="15" rx="4" transform="rotate(30 0 -42)"/>
+                            <rect x="-12" y="-35" width="8" height="15" rx="4" transform="rotate(-30 0 -27)"/>
+                            <rect x="4" y="-35" width="8" height="15" rx="4" transform="rotate(30 0 -27)"/>
+                            <rect x="-12" y="-20" width="8" height="15" rx="4" transform="rotate(-30 0 -12)"/>
+                            <rect x="4" y="-20" width="8" height="15" rx="4" transform="rotate(30 0 -12)"/>
+                            <rect x="-12" y="-5" width="8" height="15" rx="4" transform="rotate(-30 0 3)"/>
+                            <rect x="4" y="-5" width="8" height="15" rx="4" transform="rotate(30 0 3)"/>
+                        </g>
+                    </g>
+
+                    <!-- Logo principal centralizado -->
+                    <g transform="translate(200, 150)">
+                        <!-- M com seta -->
+                        <g filter="url(#softShadow)">
+                            <path d="M 0 -40 L 0 40 L 15 40 L 15 -10 L 45 30 L 75 -10 L 75 40 L 90 40 L 90 -40 L 75 -40 L 45 0 L 15 -40 Z" fill="url(#markdownGradient)"/>
+
+                        </g>
+                    </g>
+
+                    <!-- Texto do título -->
+                    <g id="banner-text">
+                        <text x="370" y="140" font-family="'Segoe UI', Arial, sans-serif" font-size="72" font-weight="bold" fill="white">
+                            Markdown
+                        </text>
+                        <text x="370" y="200" font-family="'Segoe UI', Arial, sans-serif" font-size="72" font-weight="bold" fill="white">
+                            Harvest
+                        </text>
+                    </g>
+
+                    <!-- Tagline -->
+                    <text id="tagline" x="880" y="165" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="#8b949e" opacity="0.8" style="display: none;">
+                        Clean Markdown
+                        <tspan x="880" dy="25">from the Web</tspan>
+                    </text>
+
+                    <!-- Símbolos Markdown decorativos -->
+                    <g opacity="0.2" fill="#6b7280" font-family="monospace" font-size="16">
+                        <text x="120" y="50">#</text>
+                        <text x="150" y="70">##</text>
+                        <text x="120" y="250">```</text>
+                        <text x="1050" y="50">**</text>
+                        <text x="1080" y="70">[]()</text>
+                        <text x="1050" y="250">---</text>
+                    </g>
+                </svg>

@@ -1,0 +1,18 @@
+[package]
+name = "markdown-harvest"
+version = "0.1.0"
+edition = "2024"
+keywords = ["html", "text", "markdown", "url", "rag", "web-scraping"]
+license = "MIT"
+readme = "README.md"
+description = "A Rust crate designed to extract, clean, and convert web content from URLs found in text messages into clean Markdown format. Perfect for RAG systems and AI workflows."
+repository = "https://github.com/your-username/markdown-harvest"
+categories = ["web-programming", "text-processing", "parsing"]
+
+[dependencies]
+reqwest = { version = "0.12.22", features = ["blocking", "json"] }
+regex = "1"
+tokio = { version = "1.0", features = ["full"] }
+scraper = "0.23.1"
+rand = "0.9.2"
+html2md = "0.2"
