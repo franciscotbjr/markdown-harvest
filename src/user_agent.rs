@@ -1,31 +1,87 @@
 use rand::prelude::*;
 
+/// Represents different browser user agent strings for web scraping.
+///
+/// This enum provides a collection of realistic user agent strings from various
+/// browsers and operating systems. Using different user agents helps avoid being
+/// blocked by websites that restrict automated access.
+///
+/// # Examples
+///
+/// ```rust
+/// use markdown_harvest::UserAgent;
+///
+/// // Get a specific user agent
+/// let chrome_windows = UserAgent::WindowsChrome;
+/// println!("User-Agent: {}", chrome_windows.to_string());
+///
+/// // Get a random user agent for better diversity
+/// let random_agent = UserAgent::random();
+/// println!("Random User-Agent: {}", random_agent.to_string());
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub enum UserAgent {
     // Windows
+    /// Google Chrome browser on Windows 10/11
     WindowsChrome,
+    /// Mozilla Firefox browser on Windows 10/11
     WindowsFirefox,
+    /// Microsoft Edge browser on Windows 10/11
     WindowsEdge,
 
     // macOS
+    /// Google Chrome browser on macOS
     MacOSChrome,
+    /// Safari browser on macOS
     MacOSSafari,
+    /// Mozilla Firefox browser on macOS
     MacOSFirefox,
 
     // Linux
+    /// Google Chrome browser on Linux
     LinuxChrome,
+    /// Mozilla Firefox browser on Linux
     LinuxFirefox,
 
     // Mobile Android
+    /// Google Chrome browser on Android devices
     AndroidChrome,
+    /// Mozilla Firefox browser on Android devices
     AndroidFirefox,
 
     // Mobile iOS
+    /// Safari browser on iOS devices (iPhone/iPad)
     IOSSafari,
+    /// Google Chrome browser on iOS devices (iPhone/iPad)
     IOSChrome,
 }
 
 impl UserAgent {
+    /// Converts the UserAgent enum variant to its corresponding user agent string.
+    ///
+    /// Each variant returns a realistic, up-to-date user agent string that mimics
+    /// real browsers. These strings include browser version numbers, operating system
+    /// details, and rendering engine information.
+    ///
+    /// # Returns
+    ///
+    /// A `String` containing the complete user agent string for HTTP headers.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use markdown_harvest::UserAgent;
+    ///
+    /// let chrome = UserAgent::WindowsChrome;
+    /// let user_agent_string = chrome.to_string();
+    /// assert!(user_agent_string.contains("Chrome"));
+    /// assert!(user_agent_string.contains("Windows"));
+    ///
+    /// let firefox = UserAgent::LinuxFirefox;
+    /// let user_agent_string = firefox.to_string();
+    /// assert!(user_agent_string.contains("Firefox"));
+    /// assert!(user_agent_string.contains("Linux"));
+    /// ```
     pub fn to_string(&self) -> String {
         match self {
             // Windows User Agents
@@ -48,7 +104,35 @@ impl UserAgent {
         }
     }
 
-    /// Returns a random user agent for better web scraping diversity
+    /// Returns a random user agent for better web scraping diversity.
+    ///
+    /// This method selects a random user agent from all available variants to help
+    /// avoid detection and blocking by websites. Different user agents simulate
+    /// requests from various browsers and operating systems.
+    ///
+    /// # Returns
+    ///
+    /// A randomly selected `UserAgent` variant. If random selection fails
+    /// (which should never happen), defaults to `UserAgent::LinuxFirefox`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use markdown_harvest::UserAgent;
+    ///
+    /// // Get different random user agents
+    /// let agent1 = UserAgent::random();
+    /// let agent2 = UserAgent::random();
+    ///
+    /// // They might be different (but could be the same due to randomness)
+    /// println!("First random agent: {}", agent1.to_string());
+    /// println!("Second random agent: {}", agent2.to_string());
+    ///
+    /// // Use in HTTP request
+    /// let random_agent = UserAgent::random();
+    /// let user_agent_header = random_agent.to_string();
+    /// // Use user_agent_header in your HTTP client...
+    /// ```
     pub fn random() -> UserAgent {
         let agents = [
             UserAgent::WindowsChrome,
