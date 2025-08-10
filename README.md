@@ -66,7 +66,7 @@ graph LR
 ## 🚀 Quick Start
 
 ```rust
-use markdown_harvester::MarkdownHarvester;
+use markdown_harvest::MarkdownHarvester;
 
 fn main() {
     let text = "Check this out: https://example.com/article";
@@ -92,7 +92,7 @@ markdown-harvest = "0.1.0"
 ### 📝 Basic Usage
 
 ```rust
-use markdown_harvester::MarkdownHarvester;
+use markdown_harvest::MarkdownHarvester;
 
 fn main() {
     let text = "Check out this article: https://example.com/article.html and this one too: https://news.site.com/story";
@@ -137,7 +137,7 @@ let results = MarkdownHarvest::get_hyperlinks_content(input.to_string());
 
 ```rust
 // Main function to extract content from URLs in text
-MarkdownHarvest::get_hyperlinks_content(text: String) -> Vec<(String, String)>
+MarkdownHarvester::get_hyperlinks_content(text: String) -> Vec<(String, String)>
 
 // User agent utilities
 UserAgent::random_windows() -> String
@@ -262,7 +262,7 @@ Contributions are welcome! Here's how to get started:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/markdown-harvest.git
+git clone https://github.com/franciscotbjr/markdown-harvest
 cd markdown-harvest
 
 # Run tests
