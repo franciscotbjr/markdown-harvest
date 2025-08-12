@@ -100,7 +100,4 @@ impl MarkdownHarvester {
 
         markdown_results
     }
-
-
 }
-
