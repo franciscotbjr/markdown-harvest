@@ -16,7 +16,7 @@ impl HttpClient {
         Self {}
     }
 
-    /// Extracts URLs from text and fetches their content in one operation.
+    /// Extracts URLs from text and fetches their content in one operation using blocking HTTP.
     pub fn fetch_content_from_text(&self, text: &str) -> Vec<(String, String)> {
         let urls = self.extract_urls(text);
         if urls.is_empty() {
@@ -34,11 +34,11 @@ impl HttpClient {
             .collect()
     }
 
-    /// Fetches HTML content from a list of URLs.
+    /// Fetches HTML content from a list of URLs using blocking HTTP.
     fn fetch_content_from_urls(&self, urls: Vec<String>) -> Vec<(String, String)> {
         handles_http_requests_results(urls)
     }
- 
+
 }
 
 fn handles_http_requests_results(urls: Vec<String>) -> Vec<(String, String)> {

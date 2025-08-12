@@ -20,12 +20,11 @@ impl ContentProcessor {
     pub fn new() -> Self {
         Self {}
     }
-    
+
     /// Converts HTML content to clean Markdown format.
     pub fn html_to_markdown(&self, html: &str) -> String {
         extract_and_clean_body(html)
     }
-
 }
 
 fn extract_and_clean_body(html: &str) -> String {
@@ -183,24 +182,61 @@ fn remove_lines_metadata_or_navigation(lines: Vec<&str>) -> Vec<&str> {
                 return trimmed.is_empty(); // Keep empty lines for spacing
             }
 
-            // Skip lines that look like metadata or navigation
+            // Keep lines with meaningful content (relaxed filtering for single words)
             let lower = trimmed.to_lowercase();
+
+                        // Only filter out single words if they are likely navigation/metadata terms
+            if !trimmed.contains(' ') {
+                let navigation_terms = [
+                    "home",
+                    "about",
+                    "contact",
+                    "menu",
+                    "search",
+                    "login",
+                    "register",
+                    "subscribe",
+                    "share",
+                    "follow",
+                    "back",
+                    "next",
+                    "prev",
+                    "more",
+                    "advertisement",
+                    "ads",
+                    "sponsored",
+                    "cookie",
+                    "privacy",
+                    "terms",
+                ];
+                if navigation_terms.iter().any(|&term| lower == term) {
+                    return false;
+                }
+            }
+
+            // Skip obvious metadata/navigation patterns
             if lower.starts_with("http")
                 || lower.contains("@")
-                || (trimmed
-                    .chars()
-                    .all(|c| c.is_alphabetic() || c.is_whitespace())
-                    && !trimmed.contains(' '))
+                || lower == "menu"
+                || lower == "navigation"
+                || lower == "nav"
+                || lower == "footer"
+                || lower == "header"
+                || lower == "sidebar"
             {
-                // Single words without spaces
                 return false;
             }
 
+            // Filter out extremely short lines (less than 2 characters) that aren't meaningful
+            if trimmed.len() < 2 {
+                return false;
+            }
+
+            // Keep everything else, including single words that could be content
             true
         })
         .collect()
 }
-
 
 #[cfg(test)]
 mod tests {

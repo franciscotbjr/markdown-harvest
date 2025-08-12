@@ -1,7 +1,4 @@
-use crate::{
-    content_processor::ContentProcessor, 
-    http_client::HttpClient
-};
+use crate::{content_processor::ContentProcessor, http_client::HttpClient};
 
 /// Main struct for extracting and converting web content from URLs to Markdown.
 ///
@@ -28,7 +25,6 @@ use crate::{
 pub struct MarkdownHarvester {}
 
 impl MarkdownHarvester {
-
     /// Extracts URLs from the given text and fetches their content as Markdown.
     ///
     /// This method performs the following operations:
