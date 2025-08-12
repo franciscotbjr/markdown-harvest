@@ -1,8 +1,8 @@
+mod content_processor;
+mod http_client;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;
-mod http_client;
-mod content_processor;
 
 use markdown_harvester::MarkdownHarvester;
 use std::io::stdin;

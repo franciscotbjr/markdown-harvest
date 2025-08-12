@@ -185,7 +185,7 @@ fn remove_lines_metadata_or_navigation(lines: Vec<&str>) -> Vec<&str> {
             // Keep lines with meaningful content (relaxed filtering for single words)
             let lower = trimmed.to_lowercase();
 
-                        // Only filter out single words if they are likely navigation/metadata terms
+            // Only filter out single words if they are likely navigation/metadata terms
             if !trimmed.contains(' ') {
                 let navigation_terms = [
                     "home",

@@ -2,7 +2,6 @@ use crate::user_agent::UserAgent;
 use regex::Regex;
 use reqwest::blocking::Client;
 
-
 /// Component responsible for handling HTTP requests and URL processing.
 ///
 /// `HttpClient` encapsulates all HTTP-related functionality including URL extraction,
@@ -38,7 +37,6 @@ impl HttpClient {
     fn fetch_content_from_urls(&self, urls: Vec<String>) -> Vec<(String, String)> {
         handles_http_requests_results(urls)
     }
-
 }
 
 fn handles_http_requests_results(urls: Vec<String>) -> Vec<(String, String)> {
