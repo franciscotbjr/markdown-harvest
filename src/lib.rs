@@ -42,6 +42,8 @@
 mod markdown_harvester;
 mod patterns;
 mod user_agent;
+mod http_client;
+mod content_processor;
 
 pub use markdown_harvester::MarkdownHarvester;
 pub use patterns::{
@@ -49,3 +51,5 @@ pub use patterns::{
     unwanted_text_patterns,
 };
 pub use user_agent::UserAgent;
+pub use http_client::HttpClient;
+pub use content_processor::ContentProcessor;

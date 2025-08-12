@@ -1,9 +1,10 @@
 name: Build
 
 on:
-
+  push:
+    branches: [ 'feature/**' ]
   pull_request:
-    paths-ignore: [ '*.md', 'assets/**', 'LICENSE' ]
+    paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
     branches: [ "main" ]
 
 env:
