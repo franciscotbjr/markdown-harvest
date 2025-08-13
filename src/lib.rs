@@ -13,7 +13,7 @@
 //!
 //! ## Quick Start
 //!
-//! ```rust
+//! ```rust,no_run
 //! use markdown_harvest::MarkdownHarvester;
 //!
 //! let text = "Check out this article: https://example.com/article";

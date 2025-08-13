@@ -2,7 +2,8 @@ name: Build
 
 on:
   push:
-    branches: [ 'feature/**' ]
+    paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
+    branches: [ 'feature/**', "release/**" ]
   pull_request:
     paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
     branches: [ "main" ]
