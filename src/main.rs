@@ -1,3 +1,5 @@
+mod content_processor;
+mod http_client;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;

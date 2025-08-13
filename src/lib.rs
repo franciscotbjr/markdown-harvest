@@ -39,10 +39,14 @@
 //! - [`UserAgent`]: Enum providing various browser user agent strings
 //! - Pattern functions: Helper functions that define cleaning patterns for HTML processing
 
+mod content_processor;
+mod http_client;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;
 
+pub use content_processor::ContentProcessor;
+pub use http_client::HttpClient;
 pub use markdown_harvester::MarkdownHarvester;
 pub use patterns::{
     additional_cleanup, content_selectors, media_elements, text_selectors, unwanted_elements,
