@@ -1,6 +1,7 @@
-use crate::user_agent::UserAgent;
+use crate::{http_config::HttpConfig, user_agent::UserAgent};
 use regex::Regex;
 use reqwest::blocking::Client;
+use std::time::Duration;
 
 /// Component responsible for handling HTTP requests and URL processing.
 ///
@@ -15,13 +16,26 @@ impl HttpClient {
         Self {}
     }
 
-    /// Extracts URLs from text and fetches their content in one operation using blocking HTTP.
-    pub fn fetch_content_from_text(&self, text: &str) -> Vec<(String, String)> {
+    /// Extracts URLs from text and fetches their content with custom HTTP configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - Input text that may contain URLs
+    /// * `http_config` - HTTP configuration including timeout, retries, and other settings
+    ///
+    /// # Returns
+    ///
+    /// A vector of tuples containing (URL, HTML content)
+    pub fn fetch_content_from_text(
+        &self,
+        text: &str,
+        http_config: HttpConfig,
+    ) -> Vec<(String, String)> {
         let urls = self.extract_urls(text);
         if urls.is_empty() {
             return Vec::new();
         }
-        self.fetch_content_from_urls(urls)
+        self.fetch_content_from_urls(urls, http_config)
     }
 
     fn extract_urls(&self, text: &str) -> Vec<String> {
@@ -33,14 +47,31 @@ impl HttpClient {
             .collect()
     }
 
-    /// Fetches HTML content from a list of URLs using blocking HTTP.
-    fn fetch_content_from_urls(&self, urls: Vec<String>) -> Vec<(String, String)> {
-        handles_http_requests_results(urls)
+    /// Fetches HTML content from a list of URLs with custom HTTP configuration.
+    fn fetch_content_from_urls(
+        &self,
+        urls: Vec<String>,
+        http_config: HttpConfig,
+    ) -> Vec<(String, String)> {
+        handles_http_requests_results(urls, http_config)
     }
 }
 
-fn handles_http_requests_results(urls: Vec<String>) -> Vec<(String, String)> {
-    let client = Client::new();
+fn handles_http_requests_results(
+    urls: Vec<String>,
+    http_config: HttpConfig,
+) -> Vec<(String, String)> {
+    let client = match http_config.timeout() {
+        Some(timeout) => Client::builder()
+            .timeout(Duration::from_millis(timeout))
+            .redirect(reqwest::redirect::Policy::limited(
+                http_config.max_redirect().unwrap_or(2),
+            ))
+            .cookie_store(http_config.cookie_store())
+            .build()
+            .unwrap_or_else(|_| Client::new()),
+        None => Client::new(),
+    };
     let mut results = Vec::new();
 
     for url in &urls {
@@ -48,12 +79,23 @@ fn handles_http_requests_results(urls: Vec<String>) -> Vec<(String, String)> {
         match client
             .get(url)
             .header("User-Agent", user_agent.to_string())
+            .header(
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            )
+            .header("Accept-Language", "en-US,en;q=0.5")
+            .header("DNT", "1")
+            .header("Connection", "keep-alive")
+            .header("Upgrade-Insecure-Requests", "1")
+            .header("Sec-Fetch-Dest", "document")
+            .header("Sec-Fetch-Mode", "navigate")
+            .header("Sec-Fetch-Site", "none")
+            .header("Sec-Fetch-User", "?1")
             .send()
         {
             Ok(response) => match response.text() {
                 Ok(html_content) => {
                     results.push((url.to_string(), html_content));
-                    println!("✓ Successfully fetched content from URL: {}", url);
                 }
                 Err(e) => {
                     eprintln!("Error reading content from {}: {}", url, e);
@@ -75,6 +117,8 @@ fn clean_url(url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::http_config::HttpConfigBuilder;
+
     use super::*;
 
     #[test]
@@ -110,7 +154,8 @@ mod tests {
     fn test_fetch_content_from_urls_empty() {
         let client = HttpClient::new();
         let urls: Vec<String> = vec![];
-        let results = client.fetch_content_from_urls(urls);
+        let results =
+            client.fetch_content_from_urls(urls, HttpConfigBuilder::new().timeout(30000).build());
         assert_eq!(results.len(), 0);
     }
 
@@ -118,7 +163,8 @@ mod tests {
     fn test_fetch_content_from_text_no_urls() {
         let client = HttpClient::new();
         let text = "This text has no URLs";
-        let results = client.fetch_content_from_text(text);
+        let results =
+            client.fetch_content_from_text(text, HttpConfigBuilder::new().timeout(30000).build());
         assert_eq!(results.len(), 0);
     }
 }
