@@ -66,6 +66,8 @@ jobs:
 
   crates_io_publish:
     name: Publish (crates.io)
+    environment:
+      name: Publish (crates.io)
     needs:
       - audit
       - build_and_test_linux
