@@ -75,8 +75,6 @@ impl MarkdownHarvester {
 
         for (url, html_content) in html_results {
             let markdown_content = content_processor.html_to_markdown(&html_content);
-            println!(" Cleaned content from URL '{}':", url);
-            println!("{}", markdown_content);
             markdown_results.push((url, markdown_content));
         }
 
