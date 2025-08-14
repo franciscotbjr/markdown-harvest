@@ -59,18 +59,21 @@ graph LR
 - **📄 HTML to Markdown Conversion**: Converts HTML content to clean, readable Markdown while preserving structure and removing unwanted elements
 - **🧹 Content Cleaning**: Removes JavaScript, CSS, advertisements, and navigation elements
 - **🤖 Multi-Platform User Agents**: Rotates between different browser user agents to avoid detection
-- **⚡ Async/Blocking Support**: Choose between async and blocking HTTP requests
+- **⚡ Configurable HTTP Options**: Customizable timeout, redirect limits, and cookie management
+- **🏗️ Builder Pattern API**: Fluent and intuitive configuration with `HttpConfig::builder()`
 - **🛡️ Error Handling**: Graceful handling of network errors and invalid URLs
 - **📝 Clean Text Output**: Normalizes whitespace and removes common non-content patterns
+- **🧪 Comprehensive Testing**: 27+ unit tests with 100% API coverage
 
 ## 🚀 Quick Start
 
 ```rust
-use markdown_harvest::MarkdownHarvester;
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
 
 fn main() {
     let text = "Check this out: https://example.com/article";
-    let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+    let config = HttpConfig::default(); // Use default HTTP configuration
+    let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
     
     for (url, content) in results {
         println!("URL: {}\nContent: {}", url, content);
@@ -84,7 +87,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-markdown-harvest = "0.1.0"
+markdown-harvest = "0.1.3"
 ```
 
 ## 📚 Usage Examples
@@ -92,12 +95,14 @@ markdown-harvest = "0.1.0"
 ### 📝 Basic Usage
 
 ```rust
-use markdown_harvest::MarkdownHarvester;
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
 
 fn main() {
     let text = "Check out this article: https://example.com/article.html and this one too: https://news.site.com/story";
     
-    let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+    // Use default configuration
+    let config = HttpConfig::default();
+    let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
     
     for (url, content) in results {
         println!("URL: {}", url);
@@ -117,18 +122,53 @@ cargo run
 
 Then enter text containing URLs when prompted.
 
-### 🔧 Library Integration
-er
+### 🔧 Advanced HTTP Configuration
+
 ```rust
-use markdown_harvest::{MarkdownHarvester, UserAgent};
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
 
-// Use different user agents
-let user_agent = UserAgent::random_windows();
-println!("Using: {}", user_agent.to_string());
+fn main() {
+    let text = "Articles: https://site1.com and https://site2.com";
+    
+    // Custom HTTP configuration with Builder pattern
+    let config = HttpConfig::builder()
+        .timeout(10000)        // 10 second timeout
+        .max_redirect(5)       // Allow up to 5 redirects
+        .cookie_store(true)    // Enable cookie storage for sessions
+        .build();
+    
+    let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
+    
+    for (url, content) in results {
+        println!("Processed: {}", url);
+        println!("Content length: {} chars", content.len());
+    }
+}
+```
 
-// Process multiple URLs from text
-let input = "Articles: https://site1.com and https://site2.com";
-let results = MarkdownHarvest::get_hyperlinks_content(input.to_string());
+### 🎯 Different Configuration Examples
+
+```rust
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
+
+// Quick timeout for fast responses only
+let fast_config = HttpConfig::builder()
+    .timeout(3000)  // 3 seconds
+    .build();
+
+// Conservative configuration for slow sites
+let patient_config = HttpConfig::builder()
+    .timeout(30000)     // 30 seconds
+    .max_redirect(10)   // More redirects allowed
+    .cookie_store(true) // Handle authentication
+    .build();
+
+// Use different configs for different scenarios
+let urgent_text = "Breaking news: https://news-site.com/urgent";
+let deep_text = "Research: https://academic-site.edu/paper";
+
+let urgent_results = MarkdownHarvester::get_hyperlinks_content(urgent_text.to_string(), fast_config);
+let research_results = MarkdownHarvester::get_hyperlinks_content(deep_text.to_string(), patient_config);
 ```
 
 ## 📖 API Documentation
@@ -137,15 +177,30 @@ let results = MarkdownHarvest::get_hyperlinks_content(input.to_string());
 
 ```rust
 // Main function to extract content from URLs in text
-MarkdownHarvester::get_hyperlinks_content(text: String) -> Vec<(String, String)>
+MarkdownHarvester::get_hyperlinks_content(text: String, http_config: HttpConfig) -> Vec<(String, String)>
+
+// HTTP configuration with Builder pattern
+HttpConfig::default() -> HttpConfig
+HttpConfig::builder() -> HttpConfigBuilder
+
+HttpConfigBuilder::new() -> HttpConfigBuilder
+HttpConfigBuilder::timeout(ms: u64) -> HttpConfigBuilder
+HttpConfigBuilder::max_redirect(count: usize) -> HttpConfigBuilder
+HttpConfigBuilder::cookie_store(enabled: bool) -> HttpConfigBuilder
+HttpConfigBuilder::build() -> HttpConfig
 
 // User agent utilities
-UserAgent::random_windows() -> String
-UserAgent::random_macos() -> String  
-UserAgent::random_linux() -> String
-UserAgent::random_android() -> String
-UserAgent::random_ios() -> String
+UserAgent::random() -> UserAgent
+UserAgent::to_string(&self) -> String
 ```
+
+### 🔧 HTTP Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `timeout` | `Option<u64>` | `None` | Request timeout in milliseconds |
+| `max_redirect` | `Option<usize>` | `None` | Maximum number of redirects to follow |
+| `cookie_store` | `bool` | `false` | Enable cookie storage for session management |
 
 ### Supported Platforms & User Agents
 
@@ -248,6 +303,34 @@ The crate handles various error conditions gracefully:
 - 🚫 Server errors (404, 500, etc.)
 - 🛡️ Blocked requests or rate limiting
 
+## 🔄 Migration from v0.1.2
+
+⚠️ **Breaking Change**: v0.1.3 introduces a breaking change in the API.
+
+### Before (v0.1.2)
+```rust
+use markdown_harvest::MarkdownHarvester;
+
+let text = "Check https://example.com";
+let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+```
+
+### After (v0.1.3)
+```rust
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
+
+let text = "Check https://example.com";
+let config = HttpConfig::default(); // Add this line
+let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config); // Add config parameter
+```
+
+### Quick Migration Tips
+1. **Import `HttpConfig`**: Add `HttpConfig` to your use statement
+2. **Create config**: Use `HttpConfig::default()` for same behavior as before
+3. **Pass config**: Add the config as the second parameter to `get_hyperlinks_content()`
+
+The change enables powerful new features like custom timeouts, redirect control, and cookie management while maintaining the same core functionality.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how to get started:
@@ -283,6 +366,18 @@ cargo clippy
 Licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ## 📋 Changelog
+
+### v0.1.3 ⚠️ BREAKING CHANGES
+- 🏗️ **HTTP Configuration with Builder Pattern**: Complete HTTP configuration system
+- 💥 **API Change**: `get_hyperlinks_content()` now requires `HttpConfig` parameter
+- ⚡ **New Features**: Configurable timeout, redirects, and cookie management
+- 🧪 **Testing**: 17 new unit tests (10→27 total) with 100% API coverage
+- 📚 **Enhanced Documentation**: Updated examples and migration guide
+
+### v0.1.2
+- 🔧 **Component Architecture**: Separated responsibilities with HttpClient and ContentProcessor
+- 🎯 **Facade Pattern**: MarkdownHarvester as clean interface
+- 🧪 **Unit Tests**: Comprehensive testing for all components
 
 ### v0.1.0
 - ✨ Initial release

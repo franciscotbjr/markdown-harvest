@@ -14,10 +14,11 @@
 //! ## Quick Start
 //!
 //! ```rust,no_run
-//! use markdown_harvest::MarkdownHarvester;
+//! use markdown_harvest::{MarkdownHarvester, HttpConfig};
 //!
 //! let text = "Check out this article: https://example.com/article";
-//! let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+//! let config = HttpConfig::default();
+//! let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
 //!
 //! for (url, markdown_content) in results {
 //!     println!("URL: {}", url);
@@ -41,12 +42,15 @@
 
 mod content_processor;
 mod http_client;
+mod http_config;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;
 
 pub use content_processor::ContentProcessor;
 pub use http_client::HttpClient;
+pub use http_config::HttpConfig;
+pub use http_config::HttpConfigBuilder;
 pub use markdown_harvester::MarkdownHarvester;
 pub use patterns::{
     additional_cleanup, content_selectors, media_elements, text_selectors, unwanted_elements,

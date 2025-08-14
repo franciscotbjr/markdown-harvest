@@ -1,4 +1,6 @@
-use crate::{content_processor::ContentProcessor, http_client::HttpClient};
+use crate::{
+    content_processor::ContentProcessor, http_client::HttpClient, http_config::HttpConfig,
+};
 
 /// Main struct for extracting and converting web content from URLs to Markdown.
 ///
@@ -10,10 +12,11 @@ use crate::{content_processor::ContentProcessor, http_client::HttpClient};
 /// # Examples
 ///
 /// ```rust,no_run
-/// use markdown_harvest::MarkdownHarvester;
+/// use markdown_harvest::{MarkdownHarvester, HttpConfig};
 ///
 /// let text = "Check out this article: https://example.com/news and https://example.com/blog";
-/// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+/// let config = HttpConfig::default();
+/// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
 ///
 /// println!("Found {} URLs with content", results.len());
 /// for (url, content) in results {
@@ -25,19 +28,16 @@ use crate::{content_processor::ContentProcessor, http_client::HttpClient};
 pub struct MarkdownHarvester {}
 
 impl MarkdownHarvester {
-    /// Extracts URLs from the given text and fetches their content as Markdown.
+    /// Extracts URLs from the given text and fetches their content as Markdown with custom HTTP configuration.
     ///
-    /// This method performs the following operations:
-    /// 1. Scans the input text for HTTP/HTTPS URLs using regex
-    /// 2. Cleans URLs by removing trailing punctuation
-    /// 3. Fetches content from each URL using HTTP requests
-    /// 4. Extracts and cleans HTML content from the response
-    /// 5. Converts cleaned HTML to Markdown format
-    /// 6. Returns a vector of tuples containing (URL, Markdown content)
+    /// This method allows specifying custom HTTP configuration including timeout, retries, and other
+    /// HTTP-related settings. This is useful when you need to control how HTTP requests are made,
+    /// such as timeout duration, number of retries, or other connection parameters.
     ///
     /// # Arguments
     ///
     /// * `text` - Input text that may contain URLs
+    /// * `http_config` - HTTP configuration including timeout, retries, and other HTTP settings
     ///
     /// # Returns
     ///
@@ -48,41 +48,23 @@ impl MarkdownHarvester {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use markdown_harvest::MarkdownHarvester;
+    /// use markdown_harvest::{MarkdownHarvester, HttpConfig};
     ///
-    /// // Single URL
+    /// // Use custom HTTP configuration with 5 seconds timeout
     /// let text = "Visit https://example.com for more info";
-    /// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
+    /// let config = HttpConfig::builder().timeout(5000).build();
+    /// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), config);
     /// // Note: results may be empty due to network availability
     ///
-    /// // Multiple URLs
-    /// let text = "Check https://example.com and https://example.org";
-    /// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
-    /// // Note: results may be empty due to network availability
-    ///
-    /// // No URLs
-    /// let text = "This text has no URLs";
-    /// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string());
-    /// assert!(results.is_empty());
+    /// // Use default HTTP configuration
+    /// let results = MarkdownHarvester::get_hyperlinks_content(text.to_string(), HttpConfig::default());
     /// ```
-    ///
-    /// # Errors
-    ///
-    /// This method handles network errors gracefully by logging them to stderr
-    /// and skipping the problematic URLs. URLs that fail to fetch will not
-    /// appear in the returned results.
-    ///
-    /// # Panics
-    ///
-    /// This method will panic if the internal URL regex compilation fails,
-    /// which should never happen under normal circumstances as the regex
-    /// pattern is hardcoded and valid.
-    pub fn get_hyperlinks_content(text: String) -> Vec<(String, String)> {
+    pub fn get_hyperlinks_content(text: String, http_config: HttpConfig) -> Vec<(String, String)> {
         let http_client = HttpClient::new();
         let content_processor = ContentProcessor::new();
 
         // Step 1: Extract URLs and fetch HTML content
-        let html_results = http_client.fetch_content_from_text(text.as_str());
+        let html_results = http_client.fetch_content_from_text(text.as_str(), http_config);
 
         if html_results.is_empty() {
             return Vec::new();
