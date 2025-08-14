@@ -41,6 +41,7 @@ jobs:
     name: Build and Test (Linux)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -66,6 +67,8 @@ jobs:
 
   crates_io_publish:
     name: Publish (crates.io)
+    environment:
+      name: Publish (crates.io)
     needs:
       - audit
       - build_and_test_linux
@@ -97,7 +100,7 @@ jobs:
 
       - name: cargo login
         run: |-
-          echo "${{ secrets.CRATES_API_TOKEN }}" | cargo login
+          echo "${{ secrets.CRATES_IO_API_TOKEN }}" | cargo login
 
       # allow-branch HEAD is because GitHub actions switches
       # to the tag while building, which is a detached head
