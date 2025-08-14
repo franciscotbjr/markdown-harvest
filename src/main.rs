@@ -28,7 +28,7 @@ fn main() {
     for (url, content) in &results {
         println!("✓ {}", url);
         println!("📄 Markdown content preview:");
-        let preview = if content.chars().count() > 200 {
+        let preview = if content.chars().count() > 2000 {
             let truncated: String = content.chars().take(200).collect();
             format!("{}...", truncated)
         } else {
