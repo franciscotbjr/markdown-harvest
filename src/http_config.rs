@@ -46,6 +46,7 @@ impl HttpConfigBuilder {
 }
 
 impl HttpConfig {
+    #[allow(dead_code)]
     fn new(timeout: Option<u64>, max_redirect: Option<usize>, cookie_store: bool) -> Self {
         Self {
             timeout,

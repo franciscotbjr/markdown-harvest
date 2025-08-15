@@ -5,6 +5,108 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2025-01-15
+
+### Added
+- **⚡ Asynchronous Processing Support**: Complete async/await implementation for high-performance concurrent URL processing
+  - New `MarkdownHarvester::get_hyperlinks_content_async()` method for parallel URL processing
+  - New `HttpClient::fetch_content_from_text_async()` for non-blocking HTTP requests
+  - Callback-based architecture allowing custom processing pipelines
+  - Support for `Future` traits with flexible callback patterns
+  - Automatic HTML-to-Markdown conversion in async context
+  - Error handling with `Result<(), Box<dyn std::error::Error>>` for robust async operations
+
+- **🚀 Performance Improvements**: Significant speed improvements through concurrent processing
+  - **Faster processing** when handling multiple URLs simultaneously
+  - Parallel HTTP requests instead of sequential processing
+  - Non-blocking operations for better resource utilization
+  - Efficient callback mechanism for real-time result processing
+  - Performance benefits scale with the number of URLs processed
+
+- **📚 Enhanced Examples & Documentation**: Comprehensive demonstration of both sync and async usage
+  - Updated `main.rs` with interactive examples showing both processing modes
+  - Side-by-side performance comparison between synchronous and asynchronous modes
+  - Real-time execution time measurements for performance awareness
+  - Copy-ready code examples for immediate implementation
+  - Clear documentation of callback patterns and error handling
+
+- **🧪 Comprehensive Async Test Suite**: Extensive testing for async functionality
+  - 8 new async unit tests covering all async methods
+  - Tests for `fetch_content_from_text_async`, `fetch_content_from_urls_async`, and `handles_http_requests_results_async`
+  - Real HTTP testing with `httpbin.org` endpoints
+  - Callback pattern validation and error scenario testing
+  - Integration tests ensuring async/sync compatibility
+
+### Changed
+- **🔧 Enhanced CLI Interface**: Interactive demonstration tool for both processing modes
+  - Menu-driven interface allowing users to choose between sync/async processing
+  - Real-time performance comparison with execution time display
+  - Live code examples showing exact implementation patterns
+  - Educational tool demonstrating proper usage of both APIs
+
+- **🏗️ Improved Architecture**: Better separation of concerns and extensibility
+  - `ContentProcessor` now implements `Clone` trait for async compatibility
+  - Fixed ownership issues in async callback patterns
+  - Cleaner callback interfaces with proper `Fn + Clone` bounds
+  - Optimized memory usage in concurrent operations
+
+### Technical Details
+- **⚡ Async Implementation**: Built on `tokio` runtime for optimal async performance
+- **🔄 Callback Architecture**: Flexible callback system supporting custom processing pipelines:
+  ```rust
+  let callback = |url: Option<String>, content: Option<String>| async move {
+      // Custom processing logic here
+  };
+  MarkdownHarvester::get_hyperlinks_content_async(text, config, callback).await?;
+  ```
+- **🎯 Future-Ready Design**: Extensible async architecture ready for additional async features
+- **📊 Performance Metrics**: Measurable performance improvements:
+  - Single URL: Comparable performance to sync version
+  - Multiple URLs: Improved performance through parallel processing
+  - Memory efficiency: Optimized for concurrent operations
+  - Scalability: Benefits increase with number of concurrent URLs
+
+### Migration Guide
+
+✅ **No Breaking Changes**: Version 0.1.4 is fully backward compatible with 0.1.3.
+
+```rust
+// ✅ Existing synchronous code continues to work unchanged
+let results = MarkdownHarvester::get_hyperlinks_content(text, http_config);
+
+// 🚀 NEW: Asynchronous processing for better performance
+#[tokio::main]
+async fn main() {
+    let callback = |url: Option<String>, content: Option<String>| async move {
+        if let (Some(url), Some(content)) = (url, content) {
+            println!("Processed: {} ({} chars)", url, content.len());
+        }
+    };
+    
+    MarkdownHarvester::get_hyperlinks_content_async(text, http_config, callback).await?;
+}
+```
+
+### Performance Comparison
+| Mode | Processing Time | Use Case |
+|------|----------------|----------|
+| **Synchronous** | Sequential processing | Returns all results after all URLs complete |
+| **Asynchronous** | Parallel processing | Streams results as each URL completes |
+
+### When to Use Async vs Sync
+- **🔄 Use Synchronous** for:
+  - When you need all results collected before proceeding
+  - Simple applications or quick prototypes
+  - Educational purposes and straightforward workflows
+  - When you don't need streaming results
+
+- **⚡ Use Asynchronous** for:
+  - Real-time result processing as URLs complete
+  - High-performance applications requiring maximum throughput
+  - Integration with existing async/await codebases
+  - When you want to process results incrementally
+  - Memory-efficient streaming of large result sets
+
 ## [0.1.3] - 2025-01-13
 
 ⚠️ **BREAKING CHANGES**: This version introduces breaking changes to the public API. See migration guide below.
