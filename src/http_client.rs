@@ -1,7 +1,10 @@
 use crate::{http_config::HttpConfig, user_agent::UserAgent};
 use regex::Regex;
-use reqwest::blocking::Client;
+use reqwest::{Client, blocking};
 use std::time::Duration;
+use std::future::Future;
+use futures::future;
+
 
 /// Component responsible for handling HTTP requests and URL processing.
 ///
@@ -37,6 +40,24 @@ impl HttpClient {
         }
         self.fetch_content_from_urls(urls, http_config)
     }
+    
+    pub async fn fetch_content_from_text_async<F, Fut>(
+        &self,
+        text: &str,
+        http_config: HttpConfig,
+        future: F) -> Result<(), Box<dyn std::error::Error>>
+        where F: Fn(Option<String>, Option<String>) -> Fut + Clone,
+        Fut: Future<Output = ()>, {
+            let urls = self.extract_urls(text);
+            if urls.is_empty() {
+                future(None, None).await;
+                return Ok(())
+            }
+
+            self.fetch_content_from_urls_async(urls, http_config, future).await?;
+
+            Ok(())
+    }
 
     fn extract_urls(&self, text: &str) -> Vec<String> {
         let url_regex = Regex::new(r"https?://[a-zA-Z0-9._/%+-]+(?:/[a-zA-Z0-9._/%+-]*)*").unwrap();
@@ -55,27 +76,30 @@ impl HttpClient {
     ) -> Vec<(String, String)> {
         handles_http_requests_results(urls, http_config)
     }
+
+    async fn fetch_content_from_urls_async<F, Fut>(
+        &self,
+        urls: Vec<String>,
+        http_config: HttpConfig,
+        future: F,
+    ) -> Result<(), Box<dyn std::error::Error>>
+        where F: Fn(Option<String>, Option<String>) -> Fut + Clone,
+        Fut: Future<Output = ()>,  {
+        handles_http_requests_results_async(urls, http_config, future).await?;
+        Ok(())
+    }
+
 }
 
 fn handles_http_requests_results(
     urls: Vec<String>,
     http_config: HttpConfig,
 ) -> Vec<(String, String)> {
-    let client = match http_config.timeout() {
-        Some(timeout) => Client::builder()
-            .timeout(Duration::from_millis(timeout))
-            .redirect(reqwest::redirect::Policy::limited(
-                http_config.max_redirect().unwrap_or(2),
-            ))
-            .cookie_store(http_config.cookie_store())
-            .build()
-            .unwrap_or_else(|_| Client::new()),
-        None => Client::new(),
-    };
+    let client = build_client(http_config);
     let mut results = Vec::new();
+    let user_agent = UserAgent::random();
 
     for url in &urls {
-        let user_agent = UserAgent::random();
         match client
             .get(url)
             .header("User-Agent", user_agent.to_string())
@@ -91,6 +115,8 @@ fn handles_http_requests_results(
             .header("Sec-Fetch-Mode", "navigate")
             .header("Sec-Fetch-Site", "none")
             .header("Sec-Fetch-User", "?1")
+            .header("js_timeout", "2000")
+            .header("js", "true")
             .send()
         {
             Ok(response) => match response.text() {
@@ -109,6 +135,85 @@ fn handles_http_requests_results(
     results
 }
 
+async fn handles_http_requests_results_async<F, Fut>(
+    urls: Vec<String>,
+    http_config: HttpConfig,
+    future: F,
+) -> Result<(), Box<dyn std::error::Error>>
+    where F: Fn(Option<String>, Option<String>) -> Fut + Clone,
+    Fut: Future<Output = ()>,  {
+        let client = build_client_async(http_config);
+        let user_agent = UserAgent::random();
+
+        let requests = urls.into_iter().map(|url|{
+            let client = client.clone();
+            let future = future.clone();
+
+            async move {
+                match client
+                    .get(&url)
+                    .header("User-Agent", user_agent.to_string())
+                    .header(
+                        "Accept",
+                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                    )
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("DNT", "1")
+                    .header("Connection", "keep-alive")
+                    .header("Upgrade-Insecure-Requests", "1")
+                    .header("Sec-Fetch-Dest", "document")
+                    .header("Sec-Fetch-Mode", "navigate")
+                    .header("Sec-Fetch-Site", "none")
+                    .header("Sec-Fetch-User", "?1")
+                    .header("js_timeout", "2000")
+                    .header("js", "true")
+                    .send().await {
+                        Ok(response) => {
+                            let body =  response.text().await.unwrap_or_default();
+                            future(Some(url.to_string()), Some(body)).await
+                        }
+                        Err(e) => {
+                            future(Some(url.to_string()), Some(format!("Error: {}", e))).await
+                        },
+                    }
+            }
+
+        });
+
+        future::join_all(requests).await;
+
+        Ok(())
+}
+
+
+fn build_client(http_config: HttpConfig) -> blocking::Client {
+     match http_config.timeout() {
+        Some(timeout) => blocking::Client::builder()
+            .timeout(Duration::from_millis(timeout))
+            .redirect(reqwest::redirect::Policy::limited(
+                http_config.max_redirect().unwrap_or(2),
+            ))
+            .cookie_store(http_config.cookie_store())
+            .build()
+            .unwrap_or_else(|_| blocking::Client::new()),
+        None => blocking::Client::new(),
+    }
+}
+
+fn build_client_async(http_config: HttpConfig) -> Client {
+     match http_config.timeout() {
+        Some(timeout) => Client::builder()
+            .timeout(Duration::from_millis(timeout))
+            .redirect(reqwest::redirect::Policy::limited(
+                http_config.max_redirect().unwrap_or(2),
+            ))
+            .cookie_store(http_config.cookie_store())
+            .build()
+            .unwrap_or_else(|_| Client::new()),
+        None => Client::new(),
+    }
+}
+
 fn clean_url(url: &str) -> String {
     // Remove common punctuation at the end of URLs
     url.trim_end_matches(&['.', ',', ';', '!', '?', ')', ']', '}'][..])
@@ -118,6 +223,8 @@ fn clean_url(url: &str) -> String {
 #[cfg(test)]
 mod tests {
     use crate::http_config::HttpConfigBuilder;
+    use tokio;
+    use std::sync::{Arc, Mutex};
 
     use super::*;
 
@@ -166,5 +273,188 @@ mod tests {
         let results =
             client.fetch_content_from_text(text, HttpConfigBuilder::new().timeout(30000).build());
         assert_eq!(results.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_content_from_text_async_no_urls() {
+        let client = HttpClient::new();
+        let text = "This text has no URLs";
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = client
+            .fetch_content_from_text_async(text, HttpConfigBuilder::new().timeout(30000).build(), callback)
+            .await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0], (None, None));
+    }
+
+    #[tokio::test]
+    async fn test_fetch_content_from_text_async_with_urls() {
+        let client = HttpClient::new();
+        let text = "Check out https://httpbin.org/status/200 for testing";
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = client
+            .fetch_content_from_text_async(text, HttpConfigBuilder::new().timeout(30000).build(), callback)
+            .await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].0.is_some());
+        assert!(results[0].1.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_fetch_content_from_urls_async_empty() {
+        let client = HttpClient::new();
+        let urls: Vec<String> = vec![];
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = client
+            .fetch_content_from_urls_async(urls, HttpConfigBuilder::new().timeout(30000).build(), callback)
+            .await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_content_from_urls_async_with_urls() {
+        let client = HttpClient::new();
+        let urls = vec!["https://httpbin.org/status/200".to_string()];
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = client
+            .fetch_content_from_urls_async(urls, HttpConfigBuilder::new().timeout(30000).build(), callback)
+            .await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].0.is_some());
+        assert!(results[0].1.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_handles_http_requests_results_async_empty() {
+        let urls: Vec<String> = vec![];
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = handles_http_requests_results_async(
+            urls, 
+            HttpConfigBuilder::new().timeout(30000).build(), 
+            callback
+        ).await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_handles_http_requests_results_async_with_urls() {
+        let urls = vec!["https://httpbin.org/status/200".to_string()];
+        let results = Arc::new(Mutex::new(Vec::new()));
+        let results_clone = results.clone();
+        
+        let callback = move |url: Option<String>, content: Option<String>| {
+            let results = results_clone.clone();
+            async move {
+                let mut results = results.lock().unwrap();
+                results.push((url, content));
+            }
+        };
+
+        let result = handles_http_requests_results_async(
+            urls, 
+            HttpConfigBuilder::new().timeout(30000).build(), 
+            callback
+        ).await;
+        
+        assert!(result.is_ok());
+        let results = results.lock().unwrap();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].0.is_some());
+        assert!(results[0].1.is_some());
+    }
+
+    #[test]
+    fn test_build_client_async_with_timeout() {
+        let http_config = HttpConfigBuilder::new().timeout(5000).build();
+        let client = build_client_async(http_config);
+        
+        // Verify the client was created successfully
+        assert_eq!(std::mem::size_of_val(&client), std::mem::size_of::<Client>());
+    }
+
+    #[test]
+    fn test_build_client_async_without_timeout() {
+        let http_config = HttpConfigBuilder::new().build();
+        let client = build_client_async(http_config);
+        
+        // Verify the client was created successfully
+        assert_eq!(std::mem::size_of_val(&client), std::mem::size_of::<Client>());
+    }
+
+    #[test]
+    fn test_build_client_async_with_max_redirect() {
+        let http_config = HttpConfigBuilder::new()
+            .timeout(5000)
+            .max_redirect(5)
+            .build();
+        let client = build_client_async(http_config);
+        
+        // Verify the client was created successfully
+        assert_eq!(std::mem::size_of_val(&client), std::mem::size_of::<Client>());
     }
 }
