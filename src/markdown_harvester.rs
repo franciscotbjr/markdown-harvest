@@ -261,32 +261,35 @@ impl MarkdownHarvester {
     /// - [`HttpConfig`](crate::HttpConfig) - HTTP configuration options
     /// - [`HttpClient::fetch_content_from_text_async`](crate::HttpClient::fetch_content_from_text_async) - Lower-level async HTTP processing
     pub async fn get_hyperlinks_content_async<F, Fut>(
-        text: String, 
-        http_config: HttpConfig, 
-        future: F
+        text: String,
+        http_config: HttpConfig,
+        future: F,
     ) -> Result<(), Box<dyn std::error::Error>>
-    where 
+    where
         F: Fn(Option<String>, Option<String>) -> Fut + Clone,
         Fut: Future<Output = ()>,
     {
         let http_client = HttpClient::new();
         let future_clone = future.clone();
 
-        let callback = move |url: Option<String>, content: Option<String>| {
-            let future = future_clone.clone();
-            async move {
-                if let (Some(url), Some(content)) = (url, content) {
-                    // Create a new ContentProcessor for each URL processing
-                    let content_processor = ContentProcessor::new();
-                    let markdown_content = content_processor.html_to_markdown(&content);
-                    future(Some(url), Some(markdown_content)).await;
-                }
-            }
-        };
-
-        http_client.fetch_content_from_text_async(text.as_str(), http_config, callback).await?;
+        http_client
+            .fetch_content_from_text_async(
+                text.as_str(),
+                http_config,
+                move |url: Option<String>, content: Option<String>| {
+                    let future = future_clone.clone();
+                    async move {
+                        if let (Some(url), Some(content)) = (url, content) {
+                            // Create a new ContentProcessor for each URL processing
+                            let content_processor = ContentProcessor::new();
+                            let markdown_content = content_processor.html_to_markdown(&content);
+                            future(Some(url), Some(markdown_content)).await;
+                        }
+                    }
+                },
+            )
+            .await?;
 
         Ok(())
     }
-
 }
