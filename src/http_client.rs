@@ -1,6 +1,6 @@
+use crate::http_regex::URL_REGEX;
 use crate::{http_config::HttpConfig, user_agent::UserAgent};
 use futures::future;
-use regex::Regex;
 use reqwest::{Client, blocking};
 use std::future::Future;
 use std::time::Duration;
@@ -63,12 +63,7 @@ impl HttpClient {
     }
 
     fn extract_urls(&self, text: &str) -> Vec<String> {
-        let url_regex = Regex::new(
-            r"https?://[a-zA-Z0-9._/%+()-]+(?:/[a-zA-Z0-9._/%+()-]*)*(?:\?[a-zA-Z0-9._/%+()=&-]*)?",
-        )
-        .unwrap();
-
-        url_regex
+        URL_REGEX
             .find_iter(text)
             .map(|m| clean_url(m.as_str()))
             .collect()
