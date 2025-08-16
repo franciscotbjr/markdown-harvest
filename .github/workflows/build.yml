@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
-    branches: [ 'feature/**', "release/**" ]
+    branches: [ 'feature/**', "release/**", "bug/**" ]
   pull_request:
     paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
     branches: [ "main" ]
