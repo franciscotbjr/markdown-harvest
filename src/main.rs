@@ -1,6 +1,7 @@
 mod content_processor;
 mod http_client;
 mod http_config;
+mod http_regex;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;

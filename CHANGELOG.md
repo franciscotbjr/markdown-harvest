@@ -15,10 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added comprehensive unit tests for query string URL extraction
   - Supports URLs like `http://example.org/page.html?id=123&type=article`
 
+### Performance Optimizations
+- **🚀 Regex Pre-compilation**: Created new `http_regex.rs` module with pre-compiled regex patterns using `once_cell::sync::Lazy`
+  - Moved URL regex compilation from runtime to application startup
+  - Eliminated repeated regex compilation overhead in `extract_urls` function
+  - Added `once_cell` dependency for efficient lazy static initialization
+  - Significant performance improvement for repeated URL extraction operations
+
 ### Technical Details
 - **🎯 Regex Enhancement**: Updated URL extraction regex from `r"https?://[a-zA-Z0-9._/%+-]+(?:/[a-zA-Z0-9._/%+-]*)*"` to `r"https?://[a-zA-Z0-9._/%+()-]+(?:/[a-zA-Z0-9._/%+()-]*)*(?:\?[a-zA-Z0-9._/%+()=&-]*)?"`
 - **🧠 Smart URL Cleaning**: Enhanced `clean_url` function to check parentheses balance before removing trailing punctuation
 - **🧪 Test Coverage**: Added new test `test_extract_urls_with_query_strings` with real-world examples
+- **🏗️ Module Architecture**: Created dedicated `http_regex` module for centralized regex management
 
 ### Added
 - **⚡ Asynchronous Processing Support**: Complete async/await implementation for high-performance concurrent URL processing
