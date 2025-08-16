@@ -63,7 +63,10 @@ impl HttpClient {
     }
 
     fn extract_urls(&self, text: &str) -> Vec<String> {
-        let url_regex = Regex::new(r"https?://[a-zA-Z0-9._/%+-]+(?:/[a-zA-Z0-9._/%+-]*)*").unwrap();
+        let url_regex = Regex::new(
+            r"https?://[a-zA-Z0-9._/%+()-]+(?:/[a-zA-Z0-9._/%+()-]*)*(?:\?[a-zA-Z0-9._/%+()=&-]*)?",
+        )
+        .unwrap();
 
         url_regex
             .find_iter(text)
@@ -219,9 +222,24 @@ fn build_client_async(http_config: HttpConfig) -> Client {
 }
 
 fn clean_url(url: &str) -> String {
-    // Remove common punctuation at the end of URLs
-    url.trim_end_matches(&['.', ',', ';', '!', '?', ')', ']', '}'][..])
-        .to_string()
+    let mut result = url.to_string();
+
+    // Only remove trailing punctuation if parentheses are not balanced
+    let open_parens = url.chars().filter(|&c| c == '(').count();
+    let close_parens = url.chars().filter(|&c| c == ')').count();
+
+    // If parentheses are balanced, don't remove the closing parenthesis
+    if open_parens == close_parens {
+        result = result
+            .trim_end_matches(&['.', ',', ';', '!', '?', ']', '}'][..])
+            .to_string();
+    } else {
+        result = result
+            .trim_end_matches(&['.', ',', ';', '!', '?', ')', ']', '}'][..])
+            .to_string();
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -254,11 +272,59 @@ mod tests {
     }
 
     #[test]
+    fn test_extract_urls_with_query_strings() {
+        let client = HttpClient::new();
+
+        // Test case 1: Sample text with query string
+        let text = "Cavafy lived in England for much of his adolescence, and developed both a command of the English language and a preference for the writings of William Shakespeare http://www.poetryfoundation.org/archive/poet.html?id=6176 and Oscar Wilde http://www.poetryfoundation.org/archive/poet.html?id=7425. Cavafy's older brothers mismanaged the family business in Liverpool, and Cavafy's mother was ultimately compelled to move the family back to Alexandria, where they lived until 1882.";
+        let urls = client.extract_urls(text);
+        assert_eq!(urls.len(), 2);
+        assert!(
+            urls.contains(&"http://www.poetryfoundation.org/archive/poet.html?id=6176".to_string())
+        );
+        assert!(
+            urls.contains(&"http://www.poetryfoundation.org/archive/poet.html?id=7425".to_string())
+        );
+
+        // Test case 2: Sample text with no query string
+        let text = "Rust is a general-purpose https://en.wikipedia.org/wiki/General-purpose_programming_language programming language https://en.wikipedia.org/wiki/Programming_language emphasizing performance https://en.wikipedia.org/wiki/Computer_performance, type safety https://en.wikipedia.org/wiki/Type_safety, and concurrency https://en.wikipedia.org/wiki/Concurrency_(computer_science). It enforces memory safety https://en.wikipedia.org/wiki/Memory_safety, meaning that all references point to valid memory.";
+        let urls = client.extract_urls(text);
+        assert_eq!(urls.len(), 6);
+        assert!(urls.contains(
+            &"https://en.wikipedia.org/wiki/General-purpose_programming_language".to_string()
+        ));
+        assert!(urls.contains(&"https://en.wikipedia.org/wiki/Programming_language".to_string()));
+        assert!(urls.contains(&"https://en.wikipedia.org/wiki/Computer_performance".to_string()));
+        assert!(urls.contains(&"https://en.wikipedia.org/wiki/Type_safety".to_string()));
+        assert!(
+            urls.contains(
+                &"https://en.wikipedia.org/wiki/Concurrency_(computer_science)".to_string()
+            )
+        );
+        assert!(urls.contains(&"https://en.wikipedia.org/wiki/Memory_safety".to_string()));
+
+        // Test case 3: Simple URL without query string
+        let text = "A language empowering everyone https://www.rust-lang.org/ to build reliable and efficient software.";
+        let urls = client.extract_urls(text);
+        assert_eq!(urls.len(), 1);
+        assert!(urls.contains(&"https://www.rust-lang.org/".to_string()));
+    }
+
+    #[test]
     fn test_clean_url() {
         assert_eq!(clean_url("https://example.com."), "https://example.com");
         assert_eq!(clean_url("https://example.com,"), "https://example.com");
         assert_eq!(clean_url("https://example.com!"), "https://example.com");
         assert_eq!(clean_url("https://example.com"), "https://example.com");
+
+        // Test balanced parentheses (should not be removed)
+        assert_eq!(
+            clean_url("https://en.wikipedia.org/wiki/Concurrency_(computer_science)"),
+            "https://en.wikipedia.org/wiki/Concurrency_(computer_science)"
+        );
+
+        // Test unbalanced parentheses (should be removed)
+        assert_eq!(clean_url("https://example.com)"), "https://example.com");
     }
 
     #[test]

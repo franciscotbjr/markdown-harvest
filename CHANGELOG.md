@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.4] - 2025-01-15
+## [0.1.4] - 2025-08-16
+
+### Fixed
+- **🔧 URL Query String Bug Fix**: Fixed URL extraction to properly preserve query string parameters
+  - Updated regex pattern in `extract_urls` function to capture query strings (e.g., `?id=6176`)
+  - Enhanced `clean_url` function to preserve balanced parentheses in URLs
+  - Fixed issue where URLs with query parameters were being truncated
+  - Added comprehensive unit tests for query string URL extraction
+  - Supports URLs like `http://example.org/page.html?id=123&type=article`
+
+### Technical Details
+- **🎯 Regex Enhancement**: Updated URL extraction regex from `r"https?://[a-zA-Z0-9._/%+-]+(?:/[a-zA-Z0-9._/%+-]*)*"` to `r"https?://[a-zA-Z0-9._/%+()-]+(?:/[a-zA-Z0-9._/%+()-]*)*(?:\?[a-zA-Z0-9._/%+()=&-]*)?"`
+- **🧠 Smart URL Cleaning**: Enhanced `clean_url` function to check parentheses balance before removing trailing punctuation
+- **🧪 Test Coverage**: Added new test `test_extract_urls_with_query_strings` with real-world examples
 
 ### Added
 - **⚡ Asynchronous Processing Support**: Complete async/await implementation for high-performance concurrent URL processing
