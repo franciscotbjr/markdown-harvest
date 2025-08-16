@@ -43,6 +43,7 @@
 mod content_processor;
 mod http_client;
 mod http_config;
+mod http_regex;
 mod markdown_harvester;
 mod patterns;
 mod user_agent;
@@ -51,6 +52,7 @@ pub use content_processor::ContentProcessor;
 pub use http_client::HttpClient;
 pub use http_config::HttpConfig;
 pub use http_config::HttpConfigBuilder;
+pub use http_regex::URL_REGEX;
 pub use markdown_harvester::MarkdownHarvester;
 pub use patterns::{
     additional_cleanup, content_selectors, media_elements, text_selectors, unwanted_elements,

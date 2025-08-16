@@ -12,7 +12,7 @@ use scraper::{Html, Selector};
 /// content extraction, cleaning unwanted elements, and converting to Markdown format.
 /// This component reuses the original functions from MarkdownHarvester to maintain
 /// compatibility and behavior.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ContentProcessor {}
 
 impl ContentProcessor {
