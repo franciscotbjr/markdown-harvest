@@ -24,3 +24,34 @@ A language empowering everyone https://www.rust-lang.org/ to build reliable and 
 ```
 ### 3.1 - EXPECTED EXTRACTED URLS
    - https://www.rust-lang.org/
+
+## 4 - SAMPLE URL REDIRECT:
+```text
+https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbU1iVm1PSGNkbGljdUtWLTlfMnBXbHpXSTdoUXxBQ3Jtc0ttdnJNQzhtM0pwa0hpRXFCSkZXOGtQYV90dk1qXzJNN0dnTEN5bms2eXY3OVQtdVV6ZmZGUTFTY1hGckZSUjZILTFlVmU1MDNwRVlkbW10QWNGWXI4MFIydy14bEpoNXRjRDdZUFFJYzRtUkNvZ0R3MA&q=https%3A%2F%2Fmodelcontextprotocol.io%2Fintroduction&v=N3vHJcHBS-w
+```
+### 4.1 - REDIRECTED TO 
+```text
+https://modelcontextprotocol.io/docs/getting-started/intro
+```
+### 4.2 - EXPECTED CONTENT RESULT
+```text
+Markdown content:
+Choose Your Path
+----------
+
+Understand Concepts
+----------
+
+Use MCP
+----------
+
+Build Servers
+----------
+
+Build Clients
+----------
+
+
+Ready to Build?
+...
+```
