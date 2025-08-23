@@ -40,15 +40,22 @@ jobs:
         run: strip 'target/${{ matrix.target }}/release/markdown-harvest'
         if: "!contains(matrix.target, 'windows')"
 
-      - uses: little-core-labs/get-git-tag@v3.0.2
-        id: tagName
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.1.0 
+      - name: 'Get next minor version'
+        id: currenttag
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
 
       - name: Build package
         id: package
         shell: bash
         run: |
-          echo "steps.tagName.outputs.tag => ${{ steps.tagName.outputs.tag }}"
-          ARCHIVE_NAME="markdown-harvest-${{ steps.tagName.outputs.tag }}-${{ matrix.target }}"
+          ARCHIVE_NAME="markdown-harvest-${{ steps.currenttag.outputs.patch }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
             ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
@@ -56,12 +63,14 @@ jobs:
             echo ::set-output "name=file::${ARCHIVE_FILE}"
             echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
           else
-            ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
-            mkdir "/tmp/${ARCHIVE_NAME}"
-            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "/tmp/${ARCHIVE_NAME}"
-            tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+            ARCHIVE_FILE="tmp/${ARCHIVE_NAME}.tar.gz"
+            mkdir "tmp"
+            mkdir "tmp/${ARCHIVE_NAME}"
+            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "tmp/${ARCHIVE_NAME}"
+            tar -czf "${ARCHIVE_FILE}" -C tmp/ "${ARCHIVE_NAME}"
             echo ::set-output "name=file::${ARCHIVE_FILE}"
             echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
+            echo ::set-output "name=releasetag::${{ steps.currenttag.outputs.patch }}"
           fi
       - name: Upload package
         uses: svenstaro/upload-release-action@v1-release
@@ -69,5 +78,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
           asset_name:  ${{ steps.package.outputs.name }}
-          tag: ${{ github.ref }}
+          tag: ${{ steps.package.outputs.releasetag }}
           overwrite: true
