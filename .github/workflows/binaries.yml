@@ -40,37 +40,23 @@ jobs:
         run: strip 'target/${{ matrix.target }}/release/markdown-harvest'
         if: "!contains(matrix.target, 'windows')"
 
-      - name: 'Get Previous tag'
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        with:
-          fallback: 0.1.0 
-      - name: 'Get next minor version'
-        id: currenttag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
-        with:
-          version: ${{ steps.previoustag.outputs.tag }}
-
       - name: Build package
         id: package
         shell: bash
         run: |
-          ARCHIVE_NAME="markdown-harvest-${{ steps.currenttag.outputs.patch }}-${{ matrix.target }}"
+          ARCHIVE_NAME="markdown-harvest-0.1.4-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
-            ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
+            ARCHIVE_FILE="./target/${{ matrix.target }}/release/${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
             7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/markdown-harvest.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
-            echo ::set-output "name=file::${ARCHIVE_FILE}"
-            echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
+            echo "file::${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name::${ARCHIVE_NAME}.zip" >> $GITHUB_OUTPUT
           else
-            ARCHIVE_FILE="tmp/${ARCHIVE_NAME}.tar.gz"
-            mkdir "tmp"
-            mkdir "tmp/${ARCHIVE_NAME}"
+            ARCHIVE_FILE="target/${{ matrix.target }}/release/${ARCHIVE_NAME}.tar.gz"
             cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "tmp/${ARCHIVE_NAME}"
             tar -czf "${ARCHIVE_FILE}" -C tmp/ "${ARCHIVE_NAME}"
-            echo ::set-output "name=file::${ARCHIVE_FILE}"
-            echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
-            echo ::set-output "name=releasetag::${{ steps.currenttag.outputs.patch }}"
+            echo "file::${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name::${ARCHIVE_NAME}.tar.gz" >> $GITHUB_OUTPUT
           fi
       - name: Upload package
         uses: svenstaro/upload-release-action@v1-release
@@ -78,5 +64,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
           asset_name:  ${{ steps.package.outputs.name }}
-          tag: ${{ steps.package.outputs.releasetag }}
+          tag: "0.1.4"
           overwrite: true
