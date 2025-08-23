@@ -1,4 +1,4 @@
-name: Binaries
+name: Release Binaries
 
 on:
   workflow_dispatch:
@@ -14,9 +14,7 @@ jobs:
       target: x86_64-pc-windows-msvc
     runs-on: '$os'
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
       - name: Setup target
         run: rustup target add $target
@@ -50,9 +48,7 @@ jobs:
       target: x86_64-unknown-linux-musl
     runs-on: '$os'
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
       - name: Setup target
         run: rustup target add $target
@@ -91,9 +87,7 @@ jobs:
       target: x86_64-apple-darwin
     runs-on: '$os'
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
       - name: Setup target
         run: rustup target add $target
