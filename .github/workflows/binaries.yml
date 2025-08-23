@@ -53,6 +53,8 @@ jobs:
             echo "name::${ARCHIVE_NAME}.zip" >> $GITHUB_OUTPUT
           else
             ARCHIVE_FILE="target/${{ matrix.target }}/release/${ARCHIVE_NAME}.tar.gz"
+            mkdir "tmp"
+            mkdir "tmp/${ARCHIVE_NAME}"
             cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "tmp/${ARCHIVE_NAME}"
             tar -czf "${ARCHIVE_FILE}" -C tmp/ "${ARCHIVE_NAME}"
             echo "file::${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
