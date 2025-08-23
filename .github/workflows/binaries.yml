@@ -61,7 +61,7 @@ jobs:
             echo "name=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_OUTPUT
           fi
       - name: Upload package
-        uses: svenstaro/upload-release-action@v1-release
+        uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
