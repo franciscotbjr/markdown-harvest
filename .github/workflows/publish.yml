@@ -1,9 +1,9 @@
+name: Publish
+
 on:
   push:
     tags:
-      - "**"
-
-name: Publish
+      - "v*"
 
 jobs:
   audit:
