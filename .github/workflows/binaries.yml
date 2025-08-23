@@ -10,9 +10,8 @@ on:
 jobs:
   package-ubuntu-latest:
     env:
-      os: ubuntu-latest
       target: x86_64-unknown-linux-musl
-    runs-on: $os
+    runs-on: ubuntu-latest
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
@@ -49,9 +48,8 @@ jobs:
     needs:
       - package-ubuntu-latest
     env:
-      os: macOS-latest
       target: x86_64-apple-darwin
-    runs-on: '$os'
+    runs-on: macOS-latest
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
@@ -86,9 +84,8 @@ jobs:
     needs:
       - package-macOS-latest
     env:
-      os: windows-latest
       target: x86_64-pc-windows-msvc
-    runs-on: '$os'
+    runs-on: windows-latest
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/checkout@v4
