@@ -41,11 +41,13 @@ jobs:
         if: "!contains(matrix.target, 'windows')"
 
       - uses: little-core-labs/get-git-tag@v3.0.2
+        id: tagName
+
       - name: Build package
         id: package
         shell: bash
         run: |
-          ARCHIVE_NAME="markdown-harvest-${GITHUB_TAG_NAME}-${{ matrix.target }}"
+          ARCHIVE_NAME="markdown-harvest-${{ steps.tagName.outputs.tag }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
             ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
