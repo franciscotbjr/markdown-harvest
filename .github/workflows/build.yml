@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
-    branches: [ 'feature/**', "release/**", "bug/**" ]
+    branches: [ 'feature/**', "release/**", "bug/**", "issue/**" ]
   pull_request:
     paths-ignore: [ '*.md', 'assets/**', 'LICENSE', CHANGELOG.md ]
     branches: [ "main" ]
@@ -17,8 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
