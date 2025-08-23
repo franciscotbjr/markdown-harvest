@@ -49,16 +49,16 @@ jobs:
             ARCHIVE_FILE="./target/${{ matrix.target }}/release/${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
             7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/markdown-harvest.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
-            echo "file::${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
-            echo "name::${ARCHIVE_NAME}.zip" >> $GITHUB_OUTPUT
+            echo "file=${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name=${ARCHIVE_NAME}.zip" >> $GITHUB_OUTPUT
           else
             ARCHIVE_FILE="target/${{ matrix.target }}/release/${ARCHIVE_NAME}.tar.gz"
             mkdir "tmp"
             mkdir "tmp/${ARCHIVE_NAME}"
             cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "tmp/${ARCHIVE_NAME}"
             tar -czf "${ARCHIVE_FILE}" -C tmp/ "${ARCHIVE_NAME}"
-            echo "file::${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
-            echo "name::${ARCHIVE_NAME}.tar.gz" >> $GITHUB_OUTPUT
+            echo "file=${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_OUTPUT
           fi
       - name: Upload package
         uses: svenstaro/upload-release-action@v1-release
