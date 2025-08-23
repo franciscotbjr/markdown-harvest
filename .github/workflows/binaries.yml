@@ -49,7 +49,7 @@ jobs:
         id: package
         shell: bash
         run: |
-          echo "tagname => $tagname"
+          echo "tagname => ${{ tagname }}"
           echo "steps.tagName.outputs.tag => ${{ steps.tagName.outputs.tag }}"
           ARCHIVE_NAME="markdown-harvest-${{ steps.tagName.outputs.tag }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
