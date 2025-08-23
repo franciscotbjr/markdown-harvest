@@ -2,6 +2,11 @@ name: Release Binaries
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        type: string
+        description: Realease version
+        required: true
 
 jobs:
   package:
@@ -44,7 +49,7 @@ jobs:
         id: package
         shell: bash
         run: |
-          ARCHIVE_NAME="markdown-harvest-0.1.4-${{ matrix.target }}"
+          ARCHIVE_NAME="markdown-harvest-${{ github.event.inputs.release }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
             ARCHIVE_FILE="./target/${{ matrix.target }}/release/${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
@@ -66,5 +71,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
           asset_name:  ${{ steps.package.outputs.name }}
-          tag: "0.1.4"
+          tag: "${{ github.event.inputs.release }}"
           overwrite: true
