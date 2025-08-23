@@ -44,9 +44,13 @@ jobs:
         id: tagName
 
       - name: Build package
+        with:
+          tagname: ${{ steps.tagName.outputs.tag }}
         id: package
         shell: bash
         run: |
+          echo "tagname => $tagname"
+          echo "steps.tagName.outputs.tag => ${{ steps.tagName.outputs.tag }}"
           ARCHIVE_NAME="markdown-harvest-${{ steps.tagName.outputs.tag }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
             ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
