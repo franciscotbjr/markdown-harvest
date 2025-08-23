@@ -17,9 +17,18 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     steps:
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
 
       - uses: actions/checkout@v4
+
+      - name: Setup target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Install musl
+        run: sudo apt-get install musl-tools
+        if: contains(matrix.target, 'linux-musl')
 
       - name: Build
         run: cargo build --target ${{ matrix.target }} --release --verbose
