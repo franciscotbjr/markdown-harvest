@@ -4,7 +4,10 @@
       "Bash(cargo:*)",
       "mcp__ide__getDiagnostics",
       "Bash(dir /S *.rs)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:crates.io)",
+      "WebFetch(domain:docs.rs)"
     ],
     "deny": []
   }
