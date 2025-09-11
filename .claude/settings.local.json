@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cargo:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(dir /S *.rs)",
+      "Bash(powershell.exe:*)"
     ],
     "deny": []
   }
