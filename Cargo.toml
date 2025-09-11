@@ -11,7 +11,10 @@ categories = ["web-programming", "text-processing", "rag"]
 exclude = [
     "assets/*",
     "sample-result.md",
-    "examples/*"
+    "examples/*",
+    "impl.md",
+    "impl-history.md",
+    "powershell_cache_script_permanent.ps1"
 ]
 
 [dependencies]

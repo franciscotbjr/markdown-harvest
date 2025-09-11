@@ -38,8 +38,14 @@ jobs:
       - name: Build
         run: cargo build --target ${{ matrix.target }} --release --verbose
 
+      - name: Build with all features
+        run: cargo build --target ${{ matrix.target }} --release --verbose --all-features
+
       - name: Run tests
         run: cargo test --verbose
+
+      - name: Run tests with all features (including chunks)
+        run: cargo test --verbose --all-features
 
       - name: Strip binary
         run: strip 'target/${{ matrix.target }}/release/markdown-harvest'
