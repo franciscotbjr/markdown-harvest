@@ -21,3 +21,6 @@ target
 #.idea/
 
 tmp
+
+impl.md
+impl-history.md

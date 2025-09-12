@@ -35,11 +35,11 @@ jobs:
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
 
-      - name: Build
-        run: cargo build --target ${{ matrix.target }} --release --verbose
+      - name: Run tests with all features (including chunks)
+        run: cargo test --verbose --all-features
 
-      - name: Run tests
-        run: cargo test --verbose
+      - name: Build with all features
+        run: cargo build --target ${{ matrix.target }} --release --verbose --all-features
 
       - name: Strip binary
         run: strip 'target/${{ matrix.target }}/release/markdown-harvest'

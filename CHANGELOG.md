@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2025-09-11
+
+### Added
+- **📦 Semantic Chunking Feature**: New optional `chunks` feature for RAG systems using `MarkdownSplitter`
+- **🔧 Smart Boundary Detection**: Intelligent semantic splitting preserving document structure
+- **⚡ Dual Processing Modes**: Both sync (`get_hyperlinks_content_as_chunks`) and async (`get_hyperlinks_content_as_chunks_async`) implementations
+- **🧠 RAG Optimized**: Semantic levels preserve headings, paragraphs, code blocks, and lists as coherent units
+- **📊 Flexible Chunk Sizes**: Configurable chunk sizes with recommendations for different embedding models
+- **🔄 Chunk Overlap Parameter**: Added optional `chunk_overlap` parameter to both sync and async chunking functions
+- **🧠 Context Preservation**: Configurable overlap between adjacent chunks for better context continuity in RAG systems
+- **⚖️ Smart Validation**: Automatic validation ensuring overlap < chunk_size with graceful error handling  
+- **📊 Flexible Configuration**: Support for overlap sizes from 0% to 99% of chunk size
+- **🔧 ChunkConfig Integration**: Native use of text-splitter's `ChunkConfig.with_overlap()` functionality
+- **📚 Comprehensive Examples Suite**: Complete set of executable examples for all API functions
+  - `sync_example.rs` - demonstrates `get_hyperlinks_content` with sequential processing
+  - `async_example.rs` - demonstrates `get_hyperlinks_content_async` with parallel processing
+  - `sync_chunks_example.rs` - demonstrates `get_hyperlinks_content_as_chunks` with semantic chunking
+  - `async_chunks_example.rs` - demonstrates `get_hyperlinks_content_as_chunks_async` with async chunking
+- **🎓 Educational Structure**: Interactive examples with user input and detailed explanations
+  - Each example includes performance timing and result previews
+  - Configurable chunk sizes with recommendations for different embedding models
+  - Interactive overlap configuration with percentage calculations
+  - Clear documentation of use cases and benefits for each processing mode
+- **📖 Examples Documentation**: Comprehensive README in `examples/` directory
+  - Installation and execution instructions for each example
+  - Requirements and usage tips for optimal results
+  - Performance comparison guidelines between sync/async modes
+- **🧪 Enhanced Testing**: 14 new unit tests for chunking and overlap functionality (41→55 total tests)
+- **📚 Comprehensive Documentation**: Complete examples with overlap recommendations for different embedding models
+- **🏗️ Optional Dependency**: `text-splitter` v0.28 with Markdown support as optional feature
+
+### Changed
+- **✅ Backward Compatible**: No breaking changes - chunks feature and overlap parameter are completely optional
+- **📋 Updated Documentation**: Enhanced README with chunking examples, overlap examples, API documentation, and usage recommendations
+- **🧪 Test Coverage**: Expanded test suite to cover overlap validation and error handling scenarios
+- **📦 Build Configuration**: Added `examples/*` to Cargo.toml exclude list
+  - Examples are excluded from package builds and releases
+  - Educational examples remain available for developers and testing
+- **🔧 Project Structure**: Organized examples as independent executables
+  - Each example runs independently without dependency on main.rs
+  - Proper feature flags for chunking examples (`--features chunks`)
+
+### Technical Details
+- **🎯 Independent Execution**: All examples are self-contained and executable
+- **📋 Feature Compliance**: Chunking examples properly require `chunks` feature flag
+- **✅ Build Verification**: All examples compile and build successfully
+- **🧪 Educational Purpose**: Examples serve as reference implementations and learning tools
+
 ## [0.1.4] - 2025-08-16
 
 ### Fixed
