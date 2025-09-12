@@ -2,8 +2,7 @@ use markdown_harvest::{MarkdownHarvester, HttpConfig};
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex};
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     println!("🦀 Markdown Harvest - Interactive CLI");
     println!("=====================================");
     println!();
@@ -24,7 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "2" => {
                 println!("\n⚡ Starting Asynchronous Processing...");
                 println!("{}", "=".repeat(50));
-                run_async_example().await?;
+                if let Err(e) = run_async_example_blocking() {
+                    println!("❌ Error: {}", e);
+                }
             }
             "3" => {
                 #[cfg(feature = "chunks")]
@@ -44,7 +45,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 {
                     println!("\n🚀 Starting Asynchronous Chunking...");
                     println!("{}", "=".repeat(50));
-                    run_async_chunks_example().await?;
+                    if let Err(e) = run_async_chunks_example_blocking() {
+                        println!("❌ Error: {}", e);
+                    }
                 }
                 #[cfg(not(feature = "chunks"))]
                 {
@@ -66,8 +69,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut _dummy = String::new();
         io::stdin().read_line(&mut _dummy).ok();
     }
-
-    Ok(())
 }
 
 fn display_menu() {
@@ -138,6 +139,12 @@ fn run_sync_example() {
     let duration = start_time.elapsed();
 
     display_sync_results(&results, duration);
+}
+
+// Option 2: Asynchronous Processing (blocking wrapper)
+fn run_async_example_blocking() -> Result<(), Box<dyn std::error::Error>> {
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on(run_async_example())
 }
 
 // Option 2: Asynchronous Processing
@@ -254,6 +261,13 @@ fn run_sync_chunks_example() {
     let duration = start_time.elapsed();
 
     display_chunks_results(&results, duration, chunk_size, chunk_overlap);
+}
+
+// Option 4: Asynchronous Chunking (blocking wrapper)
+#[cfg(feature = "chunks")]
+fn run_async_chunks_example_blocking() -> Result<(), Box<dyn std::error::Error>> {
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on(run_async_chunks_example())
 }
 
 // Option 4: Asynchronous Chunking
