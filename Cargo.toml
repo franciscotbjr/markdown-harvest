@@ -7,14 +7,16 @@ license = "MIT"
 readme = "README.md"
 description = "A Rust crate designed to extract, clean, and convert web content from URLs found in text messages into clean Markdown format. Originally created as an auxiliary component for Retrieval-Augmented Generation (RAG) solutions to process URLs submitted by users."
 repository = "https://github.com/franciscotbjr/markdown-harvest"
-categories = ["web-programming", "text-processing", "tokenizer"]
+categories = ["web-programming", "text-processing", "ai-engineering"]
 exclude = [
     "assets/*",
     "sample-result.md",
     "examples/*",
     "impl.md",
     "impl-history.md",
-    "powershell_cache_script_permanent.ps1"
+    "powershell_cache_script_permanent.ps1",
+    "samples",
+    "DEV_NOTES.md"
 ]
 
 [dependencies]
