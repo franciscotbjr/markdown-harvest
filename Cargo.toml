@@ -15,7 +15,7 @@ exclude = [
     "impl.md",
     "impl-history.md",
     "powershell_cache_script_permanent.ps1",
-    "samples",
+    "samples.md",
     "DEV_NOTES.md"
 ]
 
