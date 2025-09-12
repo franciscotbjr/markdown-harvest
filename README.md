@@ -41,6 +41,7 @@ Markdown Harvest was initially developed as part of a Retrieval-Augmented Genera
 
 ## Use Case Process Flow
 
+### 📄 Standard Content Processing
 ```mermaid
 graph LR
     A[User Input] --> B{Identifies URLs}
@@ -50,6 +51,31 @@ graph LR
     E --> F[Generates Response with Model]
     B -->|No| F
     F -->|Contextualized response| A
+```
+
+### 📦 Chunks Feature Process Flow (RAG Systems)
+```mermaid
+graph TD
+    A[User Input with URLs] --> B[Extract URLs]
+    B --> C[HTTP Content Retrieval]
+    C --> D[HTML to Markdown Conversion]
+    D --> E[Semantic Chunking]
+    E --> F{Overlap Configuration}
+    F -->|With Overlap| G[Generate Overlapping Chunks]
+    F -->|No Overlap| H[Generate Standard Chunks]
+    G --> I[Chunk Processing Pipeline]
+    H --> I
+    I --> J[Generate Embeddings]
+    J --> K[Store in Vector Database]
+    K --> L[Index for Semantic Search]
+    L --> M[RAG Context Enhancement]
+    M --> N[Enhanced AI Response]
+    
+    style E fill:#e1f5fe
+    style G fill:#f3e5f5
+    style H fill:#f3e5f5
+    style I fill:#e8f5e8
+    style M fill:#fff3e0
 ```
 
 ## ✨ Features
@@ -90,10 +116,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-markdown-harvest = "0.1.6"
+markdown-harvest = "0.1.5"
 
 # For RAG systems with semantic chunking and overlap support
-markdown-harvest = { version = "0.1.6", features = ["chunks"] }
+markdown-harvest = { version = "0.1.5", features = ["chunks"] }
 ```
 
 ## 📚 Usage Examples
@@ -245,7 +271,7 @@ let research_results = MarkdownHarvester::get_hyperlinks_content(deep_text.to_st
 
 ### 📦 Semantic Chunking for RAG Systems (chunks feature)
 
-*Feature gate: `chunks` - Enable with `markdown-harvest = { version = "0.1.6", features = ["chunks"] }`*
+*Feature gate: `chunks` - Enable with `markdown-harvest = { version = "0.1.5", features = ["chunks"] }`*
 
 The chunks feature provides semantic text splitting optimized for RAG (Retrieval-Augmented Generation) systems using `MarkdownSplitter` with intelligent boundary detection.
 
@@ -657,7 +683,7 @@ Licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ## 📋 Changelog
 
-### v0.1.6 🔄 NEW: Chunk Overlap Support
+### v0.1.5 🔄 NEW: Chunk Overlap Support
 - 🔄 **Chunk Overlap Parameter**: Added optional `chunk_overlap` parameter to both sync and async chunking functions
 - 🧠 **Context Preservation**: Configurable overlap between adjacent chunks for better context continuity in RAG systems
 - ⚖️ **Smart Validation**: Automatic validation ensuring overlap < chunk_size with graceful error handling  
