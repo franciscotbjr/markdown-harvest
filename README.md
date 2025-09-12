@@ -58,6 +58,7 @@ graph LR
 - **🎯 Smart Content Extraction**: Extracts only relevant content from HTML `<body>` elements
 - **📄 HTML to Markdown Conversion**: Converts HTML content to clean, readable Markdown while preserving structure and removing unwanted elements
 - **🧹 Content Cleaning**: Removes JavaScript, CSS, advertisements, and navigation elements
+- **📦 Semantic Chunking**: Optional chunks feature for RAG systems using `MarkdownSplitter` with semantic boundaries and configurable overlap
 - **🤖 Multi-Platform User Agents**: Rotates between different browser user agents to avoid detection
 - **⚡ Configurable HTTP Options**: Customizable timeout, redirect limits, and cookie management
 - **🏗️ Builder Pattern API**: Fluent and intuitive configuration with `HttpConfig::builder()`
@@ -65,7 +66,7 @@ graph LR
 - **📝 Clean Text Output**: Normalizes whitespace and removes common non-content patterns
 - **⚡ Asynchronous Processing**: High-performance async/await support for concurrent URL processing
 - **🔄 Callback Architecture**: Flexible callback system for real-time result streaming
-- **🧪 Comprehensive Testing**: 36+ unit tests with 100% API coverage including async functionality
+- **🧪 Comprehensive Testing**: 55+ unit tests with 100% API coverage including async functionality, chunks, and overlap
 
 ## 🚀 Quick Start
 
@@ -89,7 +90,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-markdown-harvest = "0.1.4"
+markdown-harvest = "0.1.6"
+
+# For RAG systems with semantic chunking and overlap support
+markdown-harvest = { version = "0.1.6", features = ["chunks"] }
 ```
 
 ## 📚 Usage Examples
@@ -239,6 +243,159 @@ let urgent_results = MarkdownHarvester::get_hyperlinks_content(urgent_text.to_st
 let research_results = MarkdownHarvester::get_hyperlinks_content(deep_text.to_string(), patient_config);
 ```
 
+### 📦 Semantic Chunking for RAG Systems (chunks feature)
+
+*Feature gate: `chunks` - Enable with `markdown-harvest = { version = "0.1.6", features = ["chunks"] }`*
+
+The chunks feature provides semantic text splitting optimized for RAG (Retrieval-Augmented Generation) systems using `MarkdownSplitter` with intelligent boundary detection.
+
+#### 🔄 Synchronous Chunking
+
+```rust
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
+
+#[cfg(feature = "chunks")]
+fn main() {
+    let text = "Research these articles: https://example.com/article1 and https://example.com/article2";
+    let config = HttpConfig::default();
+    let chunk_size = 1000; // 1000 characters per chunk
+    
+    let results = MarkdownHarvester::get_hyperlinks_content_as_chunks(
+        text.to_string(), 
+        config, 
+        chunk_size,
+        Some(100) // 100 characters overlap for better context preservation
+    );
+    
+    for (url, chunks) in results {
+        println!("📄 URL: {}", url);
+        println!("📦 Generated {} semantic chunks:", chunks.len());
+        
+        for (i, chunk) in chunks.iter().enumerate() {
+            println!("  Chunk {}: {} chars", i + 1, chunk.len());
+            println!("  Content: {}\n---", chunk.chars().take(100).collect::<String>());
+        }
+    }
+}
+```
+
+#### ⚡ Asynchronous Chunking
+
+```rust
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
+use std::sync::{Arc, Mutex};
+
+#[cfg(feature = "chunks")]
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let text = "Process these for RAG: https://docs.example.com https://blog.example.com";
+    let config = HttpConfig::builder()
+        .timeout(15000)
+        .build();
+    let chunk_size = 800; // Optimal for embedding models
+    
+    // Real-time chunk processing for RAG pipeline
+    let callback = |url: Option<String>, chunks: Option<Vec<String>>| async move {
+        match (url, chunks) {
+            (Some(url), Some(chunks)) => {
+                println!("🔗 Processing {} chunks from: {}", chunks.len(), url);
+                
+                for (i, chunk) in chunks.iter().enumerate() {
+                    println!("  📦 Chunk {}: {} chars", i + 1, chunk.len());
+                    
+                    // RAG Pipeline Integration:
+                    // 1. Generate embeddings for this semantic chunk
+                    // 2. Store in vector database with metadata
+                    // 3. Index for semantic search
+                    // 4. Preserve document context and structure
+                }
+            }
+            (None, None) => {
+                println!("ℹ️ No URLs found in text");
+            }
+            _ => unreachable!(),
+        }
+    };
+    
+    MarkdownHarvester::get_hyperlinks_content_as_chunks_async(
+        text.to_string(),
+        config,
+        chunk_size,
+        Some(80), // 80 characters overlap - optimal for embedding models
+        callback
+    ).await?;
+    
+    Ok(())
+}
+```
+
+#### 🧠 Semantic Chunking Benefits
+
+The `MarkdownSplitter` uses intelligent semantic levels for optimal RAG performance:
+
+1. **📊 Heading Preservation**: Keeps headers with their content sections
+2. **📝 Paragraph Integrity**: Maintains paragraph boundaries and flow
+3. **📋 List Coherence**: Preserves list items and hierarchical structure  
+4. **💻 Code Block Unity**: Keeps code blocks intact as single units
+5. **🔗 Link Context**: Maintains inline formatting and link relationships
+6. **⚖️ Semantic Balance**: Optimizes chunk size vs. content coherence
+
+**Chunk Size Recommendations for RAG:**
+- **Small Models**: 400-800 characters
+- **Medium Models**: 800-1500 characters  
+- **Large Models**: 1500-2500 characters
+
+#### 🔄 Chunk Overlap Examples
+
+The `chunk_overlap` parameter enables context preservation between adjacent chunks:
+
+```rust
+use markdown_harvest::{MarkdownHarvester, HttpConfig};
+
+#[cfg(feature = "chunks")]
+fn main() {
+    let text = "Process: https://example.com/documentation";
+    let config = HttpConfig::default();
+    
+    // Without overlap - standard chunking
+    let standard_chunks = MarkdownHarvester::get_hyperlinks_content_as_chunks(
+        text.clone(), 
+        config.clone(), 
+        1000, 
+        None  // No overlap
+    );
+    // Result: [Chunk1][Chunk2][Chunk3]
+    
+    // With overlap - better context preservation
+    let overlap_chunks = MarkdownHarvester::get_hyperlinks_content_as_chunks(
+        text, 
+        config, 
+        1000, 
+        Some(200)  // 200 characters overlap
+    );
+    // Result: [Chunk1][Chunk1+2][Chunk2+3][Chunk3] (200 char overlap)
+    
+    println!("Standard chunks: {}", standard_chunks.len());
+    println!("Overlap chunks: {}", overlap_chunks.len());
+}
+```
+
+**Overlap Size Recommendations:**
+
+| Use Case | Chunk Size | Recommended Overlap | Overlap % |
+|----------|------------|--------------------|-----------| 
+| **Small Embeddings** | 400-800 | 100-200 chars | 25-50% |
+| **Medium Embeddings** | 800-1500 | 150-300 chars | 15-20% |
+| **Large Embeddings** | 1500-2500 | 200-400 chars | 10-15% |
+| **Code Documentation** | 1000-2000 | 200-500 chars | 20-25% |
+| **Academic Papers** | 1500-3000 | 300-600 chars | 20-25% |
+
+**Benefits of Overlap:**
+- 🔗 **Context Continuity**: Important information doesn't get "cut" between chunks
+- 📈 **Improved Retrieval**: Higher probability of finding relevant information  
+- 🧠 **Better Embeddings**: More coherent semantic representations
+- ⚡ **Flexible Tuning**: Adjust overlap based on content type and model requirements
+
 ## 📖 API Documentation
 
 ### Core Functions
@@ -261,6 +418,36 @@ where
     F: Fn(Option<String>, Option<String>) -> Fut + Clone,
     Fut: Future<Output = ()>
 ```
+
+#### Semantic Chunking Functions (chunks feature)
+```rust
+// Synchronous chunking for RAG systems with optional overlap
+MarkdownHarvester::get_hyperlinks_content_as_chunks(
+    text: String, 
+    http_config: HttpConfig,
+    chunk_size: usize,
+    chunk_overlap: Option<usize>  // ← NEW: Overlap between chunks (must be < chunk_size)
+) -> Vec<(String, Vec<String>)>
+
+// Asynchronous chunking with real-time callback processing and optional overlap
+MarkdownHarvester::get_hyperlinks_content_as_chunks_async<F, Fut>(
+    text: String,
+    http_config: HttpConfig,
+    chunk_size: usize,
+    chunk_overlap: Option<usize>,  // ← NEW: Overlap between chunks (must be < chunk_size)
+    callback: F
+) -> Result<(), Box<dyn std::error::Error>>
+where 
+    F: Fn(Option<String>, Option<Vec<String>>) -> Fut + Clone,
+    Fut: Future<Output = ()>
+```
+
+**Overlap Parameter Details:**
+- `chunk_overlap: Option<usize>` - Optional overlap between adjacent chunks
+- `None` - No overlap (standard chunking behavior)
+- `Some(n)` - n characters overlap between chunks
+- **Constraint**: overlap must be less than chunk_size
+- **Validation**: Invalid values return empty results with stderr warning
 
 #### HTTP Configuration
 ```rust
@@ -321,6 +508,7 @@ The crate includes user agents for:
 - **`rand`** - Random user agent selection
 - **`tokio`** - Async runtime for high-performance concurrent processing
 - **`futures`** - Async utilities and combinators
+- **`text-splitter`** - Semantic Markdown chunking for RAG systems *(optional, chunks feature)*
 
 ## 🤖 AI Integration Context
 
@@ -468,6 +656,27 @@ cargo clippy
 Licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ## 📋 Changelog
+
+### v0.1.6 🔄 NEW: Chunk Overlap Support
+- 🔄 **Chunk Overlap Parameter**: Added optional `chunk_overlap` parameter to both sync and async chunking functions
+- 🧠 **Context Preservation**: Configurable overlap between adjacent chunks for better context continuity in RAG systems
+- ⚖️ **Smart Validation**: Automatic validation ensuring overlap < chunk_size with graceful error handling  
+- 📊 **Flexible Configuration**: Support for overlap sizes from 0% to 99% of chunk size
+- 🧪 **Enhanced Testing**: 6 new unit tests for overlap functionality (49→55 total tests)
+- 📚 **Comprehensive Documentation**: Complete examples with overlap recommendations for different embedding models
+- 🔧 **ChunkConfig Integration**: Native use of text-splitter's `ChunkConfig.with_overlap()` functionality
+- ✅ **Backward Compatible**: No breaking changes - overlap parameter is optional (None = no overlap)
+
+### v0.1.5 📦 NEW: Semantic Chunking for RAG Systems
+- 📦 **Semantic Chunking Feature**: New optional `chunks` feature for RAG systems using `MarkdownSplitter`
+- 🔧 **Smart Boundary Detection**: Intelligent semantic splitting preserving document structure
+- ⚡ **Dual Processing Modes**: Both sync (`get_hyperlinks_content_as_chunks`) and async (`get_hyperlinks_content_as_chunks_async`) implementations
+- 🧠 **RAG Optimized**: Semantic levels preserve headings, paragraphs, code blocks, and lists as coherent units
+- 📊 **Flexible Chunk Sizes**: Configurable chunk sizes with recommendations for different embedding models
+- 🧪 **Enhanced Testing**: 8 new chunk-specific unit tests (41→49 total tests)
+- 📚 **Comprehensive Documentation**: Complete examples and integration guides for RAG workflows
+- 🏗️ **Optional Dependency**: `text-splitter` v0.28 with Markdown support as optional feature
+- ✅ **Backward Compatible**: No breaking changes - chunks feature is completely optional
 
 ### v0.1.4 🚀 NEW: Async Processing
 - ⚡ **Asynchronous Processing Support**: Complete async/await implementation for high-performance concurrent URL processing

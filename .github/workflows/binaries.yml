@@ -2,116 +2,74 @@ name: Release Binaries
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
-
+    inputs:
+      release:
+        type: string
+        description: Realease version
+        required: true
 
 jobs:
-  package-ubuntu-latest:
-    env:
-      os: ubuntu-latest
-      target: x86_64-unknown-linux-musl
-    runs-on: '$os'
+  package:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
     steps:
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+
       - uses: actions/checkout@v4
+
       - name: Setup target
-        run: rustup target add $target
+        run: rustup target add ${{ matrix.target }}
+
       - name: Install musl
         run: sudo apt-get install musl-tools
-      - name: Build in release configuration
-        run: cargo build --target $target --release --verbose
-      - name: Strip binary
-        run: strip 'target/$target/release/markdown-harvest'
-      - uses: little-core-labs/get-git-tag@v3.0.2
-      - name: Build package
-        id: package
-        shell: bash
-        run: |
-          ARCHIVE_NAME="markdown-harvest-${GITHUB_TAG_NAME}-$target"
-          ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
-          mkdir "/tmp/${ARCHIVE_NAME}"
-          cp README.md CHANGELOG.md LICENSE "target/$target/release/markdown-harvest" "/tmp/${ARCHIVE_NAME}"
-          tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
-          echo ::set-output "name=file::${ARCHIVE_FILE}"
-          echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
-      - name: Upload package
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.package.outputs.file }}
-          asset_name:  ${{ steps.package.outputs.name }}
-          tag: ${{ github.ref }}
-          overwrite: true
+        if: contains(matrix.target, 'linux-musl')
 
-  package-macOS-latest:
-    needs:
-      - package-ubuntu-latest
-    env:
-      os: macOS-latest
-      target: x86_64-apple-darwin
-    runs-on: '$os'
-    steps:
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/checkout@v4
-      - name: Setup target
-        run: rustup target add $target
-      - name: Install musl
-        run: cargo build --target $target --release --verbose
-      - name: Strip binary
-        run: strip 'target/$target/release/markdown-harvest'
-      - uses: little-core-labs/get-git-tag@v3.0.2
-      - name: Build package
-        id: package
-        shell: bash
-        run: |
-          ARCHIVE_NAME="markdown-harvest-${GITHUB_TAG_NAME}-$target"
-          ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
-          mkdir "/tmp/${ARCHIVE_NAME}"
-          cp README.md CHANGELOG.md LICENSE "target/$target/release/markdown-harvest" "/tmp/${ARCHIVE_NAME}"
-          tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
-          echo ::set-output "name=file::${ARCHIVE_FILE}"
-          echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
-      - name: Upload package
-        uses: svenstaro/upload-release-action@v1-release
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.package.outputs.file }}
-          asset_name:  ${{ steps.package.outputs.name }}
-          tag: ${{ github.ref }}
-          overwrite: true
+      - name: Run tests with all features (including chunks)
+        run: cargo test --verbose --all-features
 
-  package-windows:
-    needs:
-      - package-macOS-latest
-    env:
-      os: windows-latest
-      target: x86_64-pc-windows-msvc
-    runs-on: '$os'
-    steps:
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/checkout@v4
-      - name: Setup target
-        run: rustup target add $target
-      - name: Build in release configuration
-        run: cargo build --target $target --release --verbose
-      - uses: little-core-labs/get-git-tag@v3.0.2
+      - name: Build with all features
+        run: cargo build --target ${{ matrix.target }} --release --verbose --all-features
+
+      - name: Strip binary
+        run: strip 'target/${{ matrix.target }}/release/markdown-harvest'
+        if: "!contains(matrix.target, 'windows')"
+
       - name: Build package
         id: package
         shell: bash
         run: |
-          ARCHIVE_NAME="markdown-harvest-${GITHUB_TAG_NAME}-$target"
-          ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
-          mv LICENSE LICENSE.txt
-          7z a "${ARCHIVE_FILE}" "./target/$target/release/markdown-harvest.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
-          echo ::set-output "name=file::${ARCHIVE_FILE}"
-          echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
+          ARCHIVE_NAME="markdown-harvest-${{ github.event.inputs.release }}-${{ matrix.target }}"
+          if [[ '${{ matrix.target }}' == *windows* ]]; then
+            ARCHIVE_FILE="./target/${{ matrix.target }}/release/${ARCHIVE_NAME}.zip"
+            mv LICENSE LICENSE.txt
+            7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/markdown-harvest.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
+            echo "file=${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name=${ARCHIVE_NAME}.zip" >> $GITHUB_OUTPUT
+          else
+            ARCHIVE_FILE="target/${{ matrix.target }}/release/${ARCHIVE_NAME}.tar.gz"
+            mkdir "tmp"
+            mkdir "tmp/${ARCHIVE_NAME}"
+            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/markdown-harvest" "tmp/${ARCHIVE_NAME}"
+            tar -czf "${ARCHIVE_FILE}" -C tmp/ "${ARCHIVE_NAME}"
+            echo "file=${ARCHIVE_FILE}" >> $GITHUB_OUTPUT
+            echo "name=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_OUTPUT
+          fi
       - name: Upload package
-        uses: svenstaro/upload-release-action@v1-release
+        uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
           asset_name:  ${{ steps.package.outputs.name }}
-          tag: ${{ github.ref }}
+          tag: "${{ github.event.inputs.release }}"
           overwrite: true
