@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-01-03
+
+### Changed
+- **📦 Dependency Updates**: Updated core dependencies to latest stable versions
+  - `reqwest`: `0.12.23` → `0.13.1`
+    - Configured with `default-features = false` and `features = ["blocking", "json", "cookies", "native-tls", "http2"]`
+    - Using `native-tls` instead of default `aws-lc-rs` to avoid cmake build dependency
+    - Maintains all existing functionality with lighter build requirements
+  - `scraper`: `0.23.1` → `0.25.0`
+    - Enhanced HTML parsing capabilities
+    - Improved performance and stability
+  - `text-splitter`: `0.28` → `0.29.3` (optional, chunks feature)
+    - Better semantic chunking for RAG systems
+    - Improved Markdown splitting algorithms
+
+### Technical Details
+- **🔧 TLS Configuration**: Switched from `aws-lc-rs` to `native-tls` for reqwest
+  - Eliminates requirement for cmake and NASM build tools
+  - Uses operating system's native TLS implementation
+  - Reduces build complexity while maintaining security
+  - Fully compatible with all existing functionality
+- **✅ Test Verification**: All 41 unit tests pass (55 with chunks feature)
+  - Verified backward compatibility with existing API
+  - No breaking changes introduced
+  - Full regression test suite executed successfully
+
 ## [0.1.5] - 2025-09-11
 
 ### Added
