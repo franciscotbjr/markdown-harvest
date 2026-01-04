@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-01-04
+## [0.1.6] - 2026-01-04
 
 ### Added
 - **🎯 Smart Article Extraction Algorithm**: Intelligent content extraction with semantic HTML5 priority ([#40](https://github.com/franciscotbjr/markdown-harvest/issues/40))
@@ -28,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `text-splitter`: `0.28` → `0.29.3` (optional, chunks feature)
     - Better semantic chunking for RAG systems
     - Improved Markdown splitting algorithms
+  - `regex`: `1` → `1.12.2`
+    - Improvement in memory usage in some cases
+    - Bug fixes and performance enhancements
+    - Better stability and compatibility
+  - `tokio`: `1.47.1` → `1.49.0`
+    - Performance improvements in async runtime scheduler
+    - Enhanced task management and I/O operations
+    - Bug fixes and stability improvements for async/await
+  - `html2md`: `0.2` → `0.2.15`
+    - Bug fixes for edge cases in HTML to Markdown conversion
+    - Improved stability and compatibility
+    - Better handling of malformed HTML structures
 
 - **🔧 Content Processing Improvements**: Enhanced extraction logic in `ContentProcessor`
   - Refactored `extract_and_clean_body()` to `extract_and_clean_content()` with smarter extraction
