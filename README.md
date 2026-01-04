@@ -119,10 +119,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-markdown-harvest = "0.1.5"
+markdown-harvest = "0.1.6"
 
 # For RAG systems with semantic chunking and overlap support
-markdown-harvest = { version = "0.1.5", features = ["chunks"] }
+markdown-harvest = { version = "0.1.6", features = ["chunks"] }
 ```
 
 ## 📚 Usage Examples
@@ -274,7 +274,7 @@ let research_results = MarkdownHarvester::get_hyperlinks_content(deep_text.to_st
 
 ### 📦 Semantic Chunking for RAG Systems (chunks feature)
 
-*Feature gate: `chunks` - Enable with `markdown-harvest = { version = "0.1.5", features = ["chunks"] }`*
+*Feature gate: `chunks` - Enable with `markdown-harvest = { version = "0.1.6", features = ["chunks"] }`*
 
 The chunks feature provides semantic text splitting optimized for RAG (Retrieval-Augmented Generation) systems using `MarkdownSplitter` with intelligent boundary detection.
 
