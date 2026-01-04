@@ -24,3 +24,17 @@ A language empowering everyone https://www.rust-lang.org/ to build reliable and 
 ```
 ### 3.1 - EXPECTED EXTRACTED URLS
    - https://www.rust-lang.org/
+
+## 4 - SAMPLE URL FOR SEMANTIC HTML5 TAGS.
+```text
+   Attempts to extract content from semantic HTML5 tags https://corrode.dev/blog/defensive-programming/.
+```
+### 4.1 - EXPECTED MARKDOWN CONTENT
+```text
+I have a hobby.
+
+Whenever I see the comment `// this should never happen` in code, I try to find out the exact conditions under which *it could* happen.
+And in 90% of cases, I find a way to do just th...
+
+[Content truncated - 15788 total characters]
+```
