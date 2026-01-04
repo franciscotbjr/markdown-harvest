@@ -9,11 +9,14 @@ description = "A Rust crate designed to extract, clean, and convert web content 
 repository = "https://github.com/franciscotbjr/markdown-harvest"
 categories = ["web-programming", "text-processing", "parsing"]
 exclude = [
-    ".github/*",
     ".claude/*",
+    ".github/*",
+    ".vscode/*",
     "assets/*",
-    "sample-result.md",
     "examples/*",
+    "reps/*",
+    "tmp/*",
+    "sample-result.md",
     "impl.md",
     "impl-history.md",
     "powershell_cache_script_permanent.ps1",

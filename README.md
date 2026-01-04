@@ -81,7 +81,10 @@ graph TD
 ## ✨ Features
 
 - **🔍 URL Detection**: Automatically identifies HTTP/HTTPS URLs in text using regex patterns
-- **🎯 Smart Content Extraction**: Extracts only relevant content from HTML `<body>` elements
+- **🎯 Smart Content Extraction**: Priority-based semantic HTML5 extraction with intelligent fallback
+  - **Semantic-first approach**: Prioritizes `<article>`, `<main>`, and `[role='main']` tags
+  - **120x improvement**: Better extraction quality for modern HTML5 sites (Issue [#40](https://github.com/franciscotbjr/markdown-harvest/issues/40))
+  - **Backward compatible**: Graceful fallback to `<body>` for legacy sites
 - **📄 HTML to Markdown Conversion**: Converts HTML content to clean, readable Markdown while preserving structure and removing unwanted elements
 - **🧹 Content Cleaning**: Removes JavaScript, CSS, advertisements, and navigation elements
 - **📦 Semantic Chunking**: Optional chunks feature for RAG systems using `MarkdownSplitter` with semantic boundaries and configurable overlap
@@ -589,21 +592,35 @@ graph TD
     B -->|URLs Found| C[🌐 HTTP Request]
     B -->|No URLs| D[⚡ Return Empty]
     C --> E[📄 HTML Parsing]
-    E --> F[✂️ Content Extraction]
-    F --> G[🧹 Clean & Filter]
-    G --> H[📝 Markdown Conversion]
-    H --> I[🔧 Final Cleanup]
-    I --> J[✅ Output]
+    E --> F{🎯 Smart Content Extraction}
+    F -->|Priority 1| G1[🏷️ Semantic HTML5 Tags]
+    F -->|Priority 2| G2[📌 Content Selectors]
+    F -->|Priority 3| G3[📦 Body Fallback]
+    G1 -->|article, main, role=main| H[✅ Content Found]
+    G2 -->|.content, .article, .post| H
+    G3 -->|body element| H
+    H --> I[🧹 Clean & Filter]
+    I --> J[📝 Markdown Conversion]
+    J --> K[🔧 Final Cleanup]
+    K --> L[✅ Output]
+
+    style G1 fill:#e1f5fe
+    style G2 fill:#f3e5f5
+    style G3 fill:#fff3e0
+    style F fill:#c8e6c9
 ```
 
 1. **🔍 Input**: Raw text from user containing URLs
 2. **🎯 Detection**: Regex-based URL extraction with punctuation cleanup
 3. **🌐 Fetching**: HTTP requests with randomized user agents
 4. **📄 HTML Parsing**: Document parsing with scraper crate
-5. **✂️ Body Extraction**: Extracts only content from HTML `<body>` element
+5. **🎯 Smart Content Extraction**: Priority-based semantic extraction strategy
+   - **Priority 1**: Semantic HTML5 tags (`<article>`, `<main>`, `[role='main']`)
+   - **Priority 2**: Content-specific selectors (`.content`, `.article`, `.post`, `.entry`)
+   - **Priority 3**: Fallback to `<body>` element for legacy sites
 6. **🚫 Media Removal**: Strips images, iframes, videos, and other non-textual elements
 7. **🧹 Structure Cleaning**: Removes scripts, styles, navigation, headers, footers, and ads
-8. **🎯 Content Selection**: Focuses on relevant elements (articles, main content, headings, paragraphs)
+8. **🎯 Content Selection**: Focuses on relevant elements preserving semantic structure
 9. **📝 Markdown Conversion**: Transforms cleaned HTML to structured Markdown using html2md
 10. **🔗 Link Processing**: Converts `[text](url)` links to plain text, removes standalone URLs
 11. **✨ Format Preservation**: Maintains headers, bold, italic, lists, and blockquotes
